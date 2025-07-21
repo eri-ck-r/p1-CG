@@ -661,7 +661,7 @@ extern "C" {
   STBTT_DEF void stbtt_PackSetSkipMissingCodepoints(stbtt_pack_context* spc, int skip);
   // If skip != 0, this tells stb_truetype to skip any codepoints for which
   // there is no corresponding glyph. If skip=0, which is the default, then
-  // codepoints without a glyph recived the font's "missing character" glyph,
+  // codepoints without a glyph received the font's "missing character" glyph,
   // typically an empty box by convention.
 
   STBTT_DEF void stbtt_GetPackedQuad(const stbtt_packedchar* chardata, int pw, int ph,  // same data as above
@@ -1522,21 +1522,21 @@ static int stbtt_InitFont_internal(stbtt_fontinfo* info, unsigned char* data, in
     // find an encoding we understand:
     switch (ttUSHORT(data + encoding_record))
     {
-    case STBTT_PLATFORM_ID_MICROSOFT:
-      switch (ttUSHORT(data + encoding_record + 2))
-      {
-      case STBTT_MS_EID_UNICODE_BMP:
-      case STBTT_MS_EID_UNICODE_FULL:
-        // MS/Unicode
+      case STBTT_PLATFORM_ID_MICROSOFT:
+        switch (ttUSHORT(data + encoding_record + 2))
+        {
+          case STBTT_MS_EID_UNICODE_BMP:
+          case STBTT_MS_EID_UNICODE_FULL:
+            // MS/Unicode
+            info->index_map = cmap + ttULONG(data + encoding_record + 4);
+            break;
+        }
+        break;
+      case STBTT_PLATFORM_ID_UNICODE:
+        // Mac/iOS has these
+        // all the encodingIDs are unicode, so we don't bother to check it
         info->index_map = cmap + ttULONG(data + encoding_record + 4);
         break;
-      }
-      break;
-    case STBTT_PLATFORM_ID_UNICODE:
-      // Mac/iOS has these
-      // all the encodingIDs are unicode, so we don't bother to check it
-      info->index_map = cmap + ttULONG(data + encoding_record + 4);
-      break;
     }
   }
   if (info->index_map == 0)
@@ -2155,251 +2155,251 @@ static int stbtt__run_charstring(const stbtt_fontinfo* info, int glyph_index, st
     switch (b0)
     {
       // @TODO implement hinting
-    case 0x13: // hintmask
-    case 0x14: // cntrmask
-      if (in_header)
-        maskbits += (sp / 2); // implicit "vstem"
-      in_header = 0;
-      stbtt__buf_skip(&b, (maskbits + 7) / 8);
-      break;
+      case 0x13: // hintmask
+      case 0x14: // cntrmask
+        if (in_header)
+          maskbits += (sp / 2); // implicit "vstem"
+        in_header = 0;
+        stbtt__buf_skip(&b, (maskbits + 7) / 8);
+        break;
 
-    case 0x01: // hstem
-    case 0x03: // vstem
-    case 0x12: // hstemhm
-    case 0x17: // vstemhm
-      maskbits += (sp / 2);
-      break;
+      case 0x01: // hstem
+      case 0x03: // vstem
+      case 0x12: // hstemhm
+      case 0x17: // vstemhm
+        maskbits += (sp / 2);
+        break;
 
-    case 0x15: // rmoveto
-      in_header = 0;
-      if (sp < 2) return STBTT__CSERR("rmoveto stack");
-      stbtt__csctx_rmove_to(c, s[sp - 2], s[sp - 1]);
-      break;
-    case 0x04: // vmoveto
-      in_header = 0;
-      if (sp < 1) return STBTT__CSERR("vmoveto stack");
-      stbtt__csctx_rmove_to(c, 0, s[sp - 1]);
-      break;
-    case 0x16: // hmoveto
-      in_header = 0;
-      if (sp < 1) return STBTT__CSERR("hmoveto stack");
-      stbtt__csctx_rmove_to(c, s[sp - 1], 0);
-      break;
+      case 0x15: // rmoveto
+        in_header = 0;
+        if (sp < 2) return STBTT__CSERR("rmoveto stack");
+        stbtt__csctx_rmove_to(c, s[sp - 2], s[sp - 1]);
+        break;
+      case 0x04: // vmoveto
+        in_header = 0;
+        if (sp < 1) return STBTT__CSERR("vmoveto stack");
+        stbtt__csctx_rmove_to(c, 0, s[sp - 1]);
+        break;
+      case 0x16: // hmoveto
+        in_header = 0;
+        if (sp < 1) return STBTT__CSERR("hmoveto stack");
+        stbtt__csctx_rmove_to(c, s[sp - 1], 0);
+        break;
 
-    case 0x05: // rlineto
-      if (sp < 2) return STBTT__CSERR("rlineto stack");
-      for (; i + 1 < sp; i += 2)
-        stbtt__csctx_rline_to(c, s[i], s[i + 1]);
-      break;
+      case 0x05: // rlineto
+        if (sp < 2) return STBTT__CSERR("rlineto stack");
+        for (; i + 1 < sp; i += 2)
+          stbtt__csctx_rline_to(c, s[i], s[i + 1]);
+        break;
 
-      // hlineto/vlineto and vhcurveto/hvcurveto alternate horizontal and vertical
-      // starting from a different place.
+        // hlineto/vlineto and vhcurveto/hvcurveto alternate horizontal and vertical
+        // starting from a different place.
 
-    case 0x07: // vlineto
-      if (sp < 1) return STBTT__CSERR("vlineto stack");
-      goto vlineto;
-    case 0x06: // hlineto
-      if (sp < 1) return STBTT__CSERR("hlineto stack");
-      for (;;)
-      {
-        if (i >= sp) break;
-        stbtt__csctx_rline_to(c, s[i], 0);
-        i++;
-vlineto:
-        if (i >= sp) break;
-        stbtt__csctx_rline_to(c, 0, s[i]);
-        i++;
-      }
-      break;
-
-    case 0x1F: // hvcurveto
-      if (sp < 4) return STBTT__CSERR("hvcurveto stack");
-      goto hvcurveto;
-    case 0x1E: // vhcurveto
-      if (sp < 4) return STBTT__CSERR("vhcurveto stack");
-      for (;;)
-      {
-        if (i + 3 >= sp) break;
-        stbtt__csctx_rccurve_to(c, 0, s[i], s[i + 1], s[i + 2], s[i + 3], (sp - i == 5) ? s[i + 4] : 0.0f);
-        i += 4;
-hvcurveto:
-        if (i + 3 >= sp) break;
-        stbtt__csctx_rccurve_to(c, s[i], 0, s[i + 1], s[i + 2], (sp - i == 5) ? s[i + 4] : 0.0f, s[i + 3]);
-        i += 4;
-      }
-      break;
-
-    case 0x08: // rrcurveto
-      if (sp < 6) return STBTT__CSERR("rcurveline stack");
-      for (; i + 5 < sp; i += 6)
-        stbtt__csctx_rccurve_to(c, s[i], s[i + 1], s[i + 2], s[i + 3], s[i + 4], s[i + 5]);
-      break;
-
-    case 0x18: // rcurveline
-      if (sp < 8) return STBTT__CSERR("rcurveline stack");
-      for (; i + 5 < sp - 2; i += 6)
-        stbtt__csctx_rccurve_to(c, s[i], s[i + 1], s[i + 2], s[i + 3], s[i + 4], s[i + 5]);
-      if (i + 1 >= sp) return STBTT__CSERR("rcurveline stack");
-      stbtt__csctx_rline_to(c, s[i], s[i + 1]);
-      break;
-
-    case 0x19: // rlinecurve
-      if (sp < 8) return STBTT__CSERR("rlinecurve stack");
-      for (; i + 1 < sp - 6; i += 2)
-        stbtt__csctx_rline_to(c, s[i], s[i + 1]);
-      if (i + 5 >= sp) return STBTT__CSERR("rlinecurve stack");
-      stbtt__csctx_rccurve_to(c, s[i], s[i + 1], s[i + 2], s[i + 3], s[i + 4], s[i + 5]);
-      break;
-
-    case 0x1A: // vvcurveto
-    case 0x1B: // hhcurveto
-      if (sp < 4) return STBTT__CSERR("(vv|hh)curveto stack");
-      f = 0.0;
-      if (sp & 1)
-      {
-        f = s[i]; i++;
-      }
-      for (; i + 3 < sp; i += 4)
-      {
-        if (b0 == 0x1B)
-          stbtt__csctx_rccurve_to(c, s[i], f, s[i + 1], s[i + 2], s[i + 3], 0.0);
-        else
-          stbtt__csctx_rccurve_to(c, f, s[i], s[i + 1], s[i + 2], 0.0, s[i + 3]);
-        f = 0.0;
-      }
-      break;
-
-    case 0x0A: // callsubr
-      if (!has_subrs)
-      {
-        if (info->fdselect.size)
-          subrs = stbtt__cid_get_glyph_subrs(info, glyph_index);
-        has_subrs = 1;
-      }
-      // FALLTHROUGH
-    case 0x1D: // callgsubr
-      if (sp < 1) return STBTT__CSERR("call(g|)subr stack");
-      v = (int)s[--sp];
-      if (subr_stack_height >= 10) return STBTT__CSERR("recursion limit");
-      subr_stack[subr_stack_height++] = b;
-      b = stbtt__get_subr(b0 == 0x0A ? subrs : info->gsubrs, v);
-      if (b.size == 0) return STBTT__CSERR("subr not found");
-      b.cursor = 0;
-      clear_stack = 0;
-      break;
-
-    case 0x0B: // return
-      if (subr_stack_height <= 0) return STBTT__CSERR("return outside subr");
-      b = subr_stack[--subr_stack_height];
-      clear_stack = 0;
-      break;
-
-    case 0x0E: // endchar
-      stbtt__csctx_close_shape(c);
-      return 1;
-
-    case 0x0C:
-      { // two-byte escape
-        float dx1, dx2, dx3, dx4, dx5, dx6, dy1, dy2, dy3, dy4, dy5, dy6;
-        float dx, dy;
-        int b1 = stbtt__buf_get8(&b);
-        switch (b1)
+      case 0x07: // vlineto
+        if (sp < 1) return STBTT__CSERR("vlineto stack");
+        goto vlineto;
+      case 0x06: // hlineto
+        if (sp < 1) return STBTT__CSERR("hlineto stack");
+        for (;;)
         {
-          // @TODO These "flex" implementations ignore the flex-depth and resolution,
-          // and always draw beziers.
-        case 0x22: // hflex
-          if (sp < 7) return STBTT__CSERR("hflex stack");
-          dx1 = s[0];
-          dx2 = s[1];
-          dy2 = s[2];
-          dx3 = s[3];
-          dx4 = s[4];
-          dx5 = s[5];
-          dx6 = s[6];
-          stbtt__csctx_rccurve_to(c, dx1, 0, dx2, dy2, dx3, 0);
-          stbtt__csctx_rccurve_to(c, dx4, 0, dx5, -dy2, dx6, 0);
-          break;
-
-        case 0x23: // flex
-          if (sp < 13) return STBTT__CSERR("flex stack");
-          dx1 = s[0];
-          dy1 = s[1];
-          dx2 = s[2];
-          dy2 = s[3];
-          dx3 = s[4];
-          dy3 = s[5];
-          dx4 = s[6];
-          dy4 = s[7];
-          dx5 = s[8];
-          dy5 = s[9];
-          dx6 = s[10];
-          dy6 = s[11];
-          //fd is s[12]
-          stbtt__csctx_rccurve_to(c, dx1, dy1, dx2, dy2, dx3, dy3);
-          stbtt__csctx_rccurve_to(c, dx4, dy4, dx5, dy5, dx6, dy6);
-          break;
-
-        case 0x24: // hflex1
-          if (sp < 9) return STBTT__CSERR("hflex1 stack");
-          dx1 = s[0];
-          dy1 = s[1];
-          dx2 = s[2];
-          dy2 = s[3];
-          dx3 = s[4];
-          dx4 = s[5];
-          dx5 = s[6];
-          dy5 = s[7];
-          dx6 = s[8];
-          stbtt__csctx_rccurve_to(c, dx1, dy1, dx2, dy2, dx3, 0);
-          stbtt__csctx_rccurve_to(c, dx4, 0, dx5, dy5, dx6, -(dy1 + dy2 + dy5));
-          break;
-
-        case 0x25: // flex1
-          if (sp < 11) return STBTT__CSERR("flex1 stack");
-          dx1 = s[0];
-          dy1 = s[1];
-          dx2 = s[2];
-          dy2 = s[3];
-          dx3 = s[4];
-          dy3 = s[5];
-          dx4 = s[6];
-          dy4 = s[7];
-          dx5 = s[8];
-          dy5 = s[9];
-          dx6 = dy6 = s[10];
-          dx = dx1 + dx2 + dx3 + dx4 + dx5;
-          dy = dy1 + dy2 + dy3 + dy4 + dy5;
-          if (STBTT_fabs(dx) > STBTT_fabs(dy))
-            dy6 = -dy;
-          else
-            dx6 = -dx;
-          stbtt__csctx_rccurve_to(c, dx1, dy1, dx2, dy2, dx3, dy3);
-          stbtt__csctx_rccurve_to(c, dx4, dy4, dx5, dy5, dx6, dy6);
-          break;
-
-        default:
-          return STBTT__CSERR("unimplemented");
+          if (i >= sp) break;
+          stbtt__csctx_rline_to(c, s[i], 0);
+          i++;
+vlineto:
+          if (i >= sp) break;
+          stbtt__csctx_rline_to(c, 0, s[i]);
+          i++;
         }
-      } break;
+        break;
 
-    default:
-      if (b0 != 255 && b0 != 28 && b0 < 32)
-        return STBTT__CSERR("reserved operator");
+      case 0x1F: // hvcurveto
+        if (sp < 4) return STBTT__CSERR("hvcurveto stack");
+        goto hvcurveto;
+      case 0x1E: // vhcurveto
+        if (sp < 4) return STBTT__CSERR("vhcurveto stack");
+        for (;;)
+        {
+          if (i + 3 >= sp) break;
+          stbtt__csctx_rccurve_to(c, 0, s[i], s[i + 1], s[i + 2], s[i + 3], (sp - i == 5) ? s[i + 4] : 0.0f);
+          i += 4;
+hvcurveto:
+          if (i + 3 >= sp) break;
+          stbtt__csctx_rccurve_to(c, s[i], 0, s[i + 1], s[i + 2], (sp - i == 5) ? s[i + 4] : 0.0f, s[i + 3]);
+          i += 4;
+        }
+        break;
 
-      // push immediate
-      if (b0 == 255)
-      {
-        f = (float)(stbtt_int32)stbtt__buf_get32(&b) / 0x10000;
-      }
-      else
-      {
-        stbtt__buf_skip(&b, -1);
-        f = (float)(stbtt_int16)stbtt__cff_int(&b);
-      }
-      if (sp >= 48) return STBTT__CSERR("push stack overflow");
-      s[sp++] = f;
-      clear_stack = 0;
-      break;
+      case 0x08: // rrcurveto
+        if (sp < 6) return STBTT__CSERR("rcurveline stack");
+        for (; i + 5 < sp; i += 6)
+          stbtt__csctx_rccurve_to(c, s[i], s[i + 1], s[i + 2], s[i + 3], s[i + 4], s[i + 5]);
+        break;
+
+      case 0x18: // rcurveline
+        if (sp < 8) return STBTT__CSERR("rcurveline stack");
+        for (; i + 5 < sp - 2; i += 6)
+          stbtt__csctx_rccurve_to(c, s[i], s[i + 1], s[i + 2], s[i + 3], s[i + 4], s[i + 5]);
+        if (i + 1 >= sp) return STBTT__CSERR("rcurveline stack");
+        stbtt__csctx_rline_to(c, s[i], s[i + 1]);
+        break;
+
+      case 0x19: // rlinecurve
+        if (sp < 8) return STBTT__CSERR("rlinecurve stack");
+        for (; i + 1 < sp - 6; i += 2)
+          stbtt__csctx_rline_to(c, s[i], s[i + 1]);
+        if (i + 5 >= sp) return STBTT__CSERR("rlinecurve stack");
+        stbtt__csctx_rccurve_to(c, s[i], s[i + 1], s[i + 2], s[i + 3], s[i + 4], s[i + 5]);
+        break;
+
+      case 0x1A: // vvcurveto
+      case 0x1B: // hhcurveto
+        if (sp < 4) return STBTT__CSERR("(vv|hh)curveto stack");
+        f = 0.0;
+        if (sp & 1)
+        {
+          f = s[i]; i++;
+        }
+        for (; i + 3 < sp; i += 4)
+        {
+          if (b0 == 0x1B)
+            stbtt__csctx_rccurve_to(c, s[i], f, s[i + 1], s[i + 2], s[i + 3], 0.0);
+          else
+            stbtt__csctx_rccurve_to(c, f, s[i], s[i + 1], s[i + 2], 0.0, s[i + 3]);
+          f = 0.0;
+        }
+        break;
+
+      case 0x0A: // callsubr
+        if (!has_subrs)
+        {
+          if (info->fdselect.size)
+            subrs = stbtt__cid_get_glyph_subrs(info, glyph_index);
+          has_subrs = 1;
+        }
+        // FALLTHROUGH
+      case 0x1D: // callgsubr
+        if (sp < 1) return STBTT__CSERR("call(g|)subr stack");
+        v = (int)s[--sp];
+        if (subr_stack_height >= 10) return STBTT__CSERR("recursion limit");
+        subr_stack[subr_stack_height++] = b;
+        b = stbtt__get_subr(b0 == 0x0A ? subrs : info->gsubrs, v);
+        if (b.size == 0) return STBTT__CSERR("subr not found");
+        b.cursor = 0;
+        clear_stack = 0;
+        break;
+
+      case 0x0B: // return
+        if (subr_stack_height <= 0) return STBTT__CSERR("return outside subr");
+        b = subr_stack[--subr_stack_height];
+        clear_stack = 0;
+        break;
+
+      case 0x0E: // endchar
+        stbtt__csctx_close_shape(c);
+        return 1;
+
+      case 0x0C:
+        { // two-byte escape
+          float dx1, dx2, dx3, dx4, dx5, dx6, dy1, dy2, dy3, dy4, dy5, dy6;
+          float dx, dy;
+          int b1 = stbtt__buf_get8(&b);
+          switch (b1)
+          {
+            // @TODO These "flex" implementations ignore the flex-depth and resolution,
+            // and always draw beziers.
+            case 0x22: // hflex
+              if (sp < 7) return STBTT__CSERR("hflex stack");
+              dx1 = s[0];
+              dx2 = s[1];
+              dy2 = s[2];
+              dx3 = s[3];
+              dx4 = s[4];
+              dx5 = s[5];
+              dx6 = s[6];
+              stbtt__csctx_rccurve_to(c, dx1, 0, dx2, dy2, dx3, 0);
+              stbtt__csctx_rccurve_to(c, dx4, 0, dx5, -dy2, dx6, 0);
+              break;
+
+            case 0x23: // flex
+              if (sp < 13) return STBTT__CSERR("flex stack");
+              dx1 = s[0];
+              dy1 = s[1];
+              dx2 = s[2];
+              dy2 = s[3];
+              dx3 = s[4];
+              dy3 = s[5];
+              dx4 = s[6];
+              dy4 = s[7];
+              dx5 = s[8];
+              dy5 = s[9];
+              dx6 = s[10];
+              dy6 = s[11];
+              //fd is s[12]
+              stbtt__csctx_rccurve_to(c, dx1, dy1, dx2, dy2, dx3, dy3);
+              stbtt__csctx_rccurve_to(c, dx4, dy4, dx5, dy5, dx6, dy6);
+              break;
+
+            case 0x24: // hflex1
+              if (sp < 9) return STBTT__CSERR("hflex1 stack");
+              dx1 = s[0];
+              dy1 = s[1];
+              dx2 = s[2];
+              dy2 = s[3];
+              dx3 = s[4];
+              dx4 = s[5];
+              dx5 = s[6];
+              dy5 = s[7];
+              dx6 = s[8];
+              stbtt__csctx_rccurve_to(c, dx1, dy1, dx2, dy2, dx3, 0);
+              stbtt__csctx_rccurve_to(c, dx4, 0, dx5, dy5, dx6, -(dy1 + dy2 + dy5));
+              break;
+
+            case 0x25: // flex1
+              if (sp < 11) return STBTT__CSERR("flex1 stack");
+              dx1 = s[0];
+              dy1 = s[1];
+              dx2 = s[2];
+              dy2 = s[3];
+              dx3 = s[4];
+              dy3 = s[5];
+              dx4 = s[6];
+              dy4 = s[7];
+              dx5 = s[8];
+              dy5 = s[9];
+              dx6 = dy6 = s[10];
+              dx = dx1 + dx2 + dx3 + dx4 + dx5;
+              dy = dy1 + dy2 + dy3 + dy4 + dy5;
+              if (STBTT_fabs(dx) > STBTT_fabs(dy))
+                dy6 = -dy;
+              else
+                dx6 = -dx;
+              stbtt__csctx_rccurve_to(c, dx1, dy1, dx2, dy2, dx3, dy3);
+              stbtt__csctx_rccurve_to(c, dx4, dy4, dx5, dy5, dx6, dy6);
+              break;
+
+            default:
+              return STBTT__CSERR("unimplemented");
+          }
+        } break;
+
+      default:
+        if (b0 != 255 && b0 != 28 && b0 < 32)
+          return STBTT__CSERR("reserved operator");
+
+        // push immediate
+        if (b0 == 255)
+        {
+          f = (float)(stbtt_int32)stbtt__buf_get32(&b) / 0x10000;
+        }
+        else
+        {
+          stbtt__buf_skip(&b, -1);
+          f = (float)(stbtt_int16)stbtt__cff_int(&b);
+        }
+        if (sp >= 48) return STBTT__CSERR("push stack overflow");
+        s[sp++] = f;
+        clear_stack = 0;
+        break;
     }
     if (clear_stack) sp = 0;
   }
@@ -2539,61 +2539,61 @@ static stbtt_int32 stbtt__GetCoverageIndex(stbtt_uint8* coverageTable, int glyph
   stbtt_uint16 coverageFormat = ttUSHORT(coverageTable);
   switch (coverageFormat)
   {
-  case 1:
-    {
-      stbtt_uint16 glyphCount = ttUSHORT(coverageTable + 2);
-
-      // Binary search.
-      stbtt_int32 l = 0, r = glyphCount - 1, m;
-      int straw, needle = glyph;
-      while (l <= r)
+    case 1:
       {
-        stbtt_uint8* glyphArray = coverageTable + 4;
-        stbtt_uint16 glyphID;
-        m = (l + r) >> 1;
-        glyphID = ttUSHORT(glyphArray + 2 * m);
-        straw = glyphID;
-        if (needle < straw)
-          r = m - 1;
-        else if (needle > straw)
-          l = m + 1;
-        else
+        stbtt_uint16 glyphCount = ttUSHORT(coverageTable + 2);
+
+        // Binary search.
+        stbtt_int32 l = 0, r = glyphCount - 1, m;
+        int straw, needle = glyph;
+        while (l <= r)
         {
-          return m;
+          stbtt_uint8* glyphArray = coverageTable + 4;
+          stbtt_uint16 glyphID;
+          m = (l + r) >> 1;
+          glyphID = ttUSHORT(glyphArray + 2 * m);
+          straw = glyphID;
+          if (needle < straw)
+            r = m - 1;
+          else if (needle > straw)
+            l = m + 1;
+          else
+          {
+            return m;
+          }
         }
+        break;
       }
-      break;
-    }
 
-  case 2:
-    {
-      stbtt_uint16 rangeCount = ttUSHORT(coverageTable + 2);
-      stbtt_uint8* rangeArray = coverageTable + 4;
-
-      // Binary search.
-      stbtt_int32 l = 0, r = rangeCount - 1, m;
-      int strawStart, strawEnd, needle = glyph;
-      while (l <= r)
+    case 2:
       {
-        stbtt_uint8* rangeRecord;
-        m = (l + r) >> 1;
-        rangeRecord = rangeArray + 6 * m;
-        strawStart = ttUSHORT(rangeRecord);
-        strawEnd = ttUSHORT(rangeRecord + 2);
-        if (needle < strawStart)
-          r = m - 1;
-        else if (needle > strawEnd)
-          l = m + 1;
-        else
-        {
-          stbtt_uint16 startCoverageIndex = ttUSHORT(rangeRecord + 4);
-          return startCoverageIndex + glyph - strawStart;
-        }
-      }
-      break;
-    }
+        stbtt_uint16 rangeCount = ttUSHORT(coverageTable + 2);
+        stbtt_uint8* rangeArray = coverageTable + 4;
 
-  default: return -1; // unsupported
+        // Binary search.
+        stbtt_int32 l = 0, r = rangeCount - 1, m;
+        int strawStart, strawEnd, needle = glyph;
+        while (l <= r)
+        {
+          stbtt_uint8* rangeRecord;
+          m = (l + r) >> 1;
+          rangeRecord = rangeArray + 6 * m;
+          strawStart = ttUSHORT(rangeRecord);
+          strawEnd = ttUSHORT(rangeRecord + 2);
+          if (needle < strawStart)
+            r = m - 1;
+          else if (needle > strawEnd)
+            l = m + 1;
+          else
+          {
+            stbtt_uint16 startCoverageIndex = ttUSHORT(rangeRecord + 4);
+            return startCoverageIndex + glyph - strawStart;
+          }
+        }
+        break;
+      }
+
+    default: return -1; // unsupported
   }
 
   return -1;
@@ -2604,44 +2604,44 @@ static stbtt_int32  stbtt__GetGlyphClass(stbtt_uint8* classDefTable, int glyph)
   stbtt_uint16 classDefFormat = ttUSHORT(classDefTable);
   switch (classDefFormat)
   {
-  case 1:
-    {
-      stbtt_uint16 startGlyphID = ttUSHORT(classDefTable + 2);
-      stbtt_uint16 glyphCount = ttUSHORT(classDefTable + 4);
-      stbtt_uint8* classDef1ValueArray = classDefTable + 6;
-
-      if (glyph >= startGlyphID && glyph < startGlyphID + glyphCount)
-        return (stbtt_int32)ttUSHORT(classDef1ValueArray + 2 * (glyph - startGlyphID));
-      break;
-    }
-
-  case 2:
-    {
-      stbtt_uint16 classRangeCount = ttUSHORT(classDefTable + 2);
-      stbtt_uint8* classRangeRecords = classDefTable + 4;
-
-      // Binary search.
-      stbtt_int32 l = 0, r = classRangeCount - 1, m;
-      int strawStart, strawEnd, needle = glyph;
-      while (l <= r)
+    case 1:
       {
-        stbtt_uint8* classRangeRecord;
-        m = (l + r) >> 1;
-        classRangeRecord = classRangeRecords + 6 * m;
-        strawStart = ttUSHORT(classRangeRecord);
-        strawEnd = ttUSHORT(classRangeRecord + 2);
-        if (needle < strawStart)
-          r = m - 1;
-        else if (needle > strawEnd)
-          l = m + 1;
-        else
-          return (stbtt_int32)ttUSHORT(classRangeRecord + 4);
-      }
-      break;
-    }
+        stbtt_uint16 startGlyphID = ttUSHORT(classDefTable + 2);
+        stbtt_uint16 glyphCount = ttUSHORT(classDefTable + 4);
+        stbtt_uint8* classDef1ValueArray = classDefTable + 6;
 
-  default:
-    return -1; // Unsupported definition type, return an error.
+        if (glyph >= startGlyphID && glyph < startGlyphID + glyphCount)
+          return (stbtt_int32)ttUSHORT(classDef1ValueArray + 2 * (glyph - startGlyphID));
+        break;
+      }
+
+    case 2:
+      {
+        stbtt_uint16 classRangeCount = ttUSHORT(classDefTable + 2);
+        stbtt_uint8* classRangeRecords = classDefTable + 4;
+
+        // Binary search.
+        stbtt_int32 l = 0, r = classRangeCount - 1, m;
+        int strawStart, strawEnd, needle = glyph;
+        while (l <= r)
+        {
+          stbtt_uint8* classRangeRecord;
+          m = (l + r) >> 1;
+          classRangeRecord = classRangeRecords + 6 * m;
+          strawStart = ttUSHORT(classRangeRecord);
+          strawEnd = ttUSHORT(classRangeRecord + 2);
+          if (needle < strawStart)
+            r = m - 1;
+          else if (needle > strawEnd)
+            l = m + 1;
+          else
+            return (stbtt_int32)ttUSHORT(classRangeRecord + 4);
+        }
+        break;
+      }
+
+    default:
+      return -1; // Unsupported definition type, return an error.
   }
 
   // "All glyphs not assigned to a class fall into class 0". (OpenType spec)
@@ -2692,83 +2692,83 @@ static stbtt_int32 stbtt__GetGlyphGPOSInfoAdvance(const stbtt_fontinfo* info, in
 
       switch (posFormat)
       {
-      case 1:
-        {
-          stbtt_int32 l, r, m;
-          int straw, needle;
-          stbtt_uint16 valueFormat1 = ttUSHORT(table + 4);
-          stbtt_uint16 valueFormat2 = ttUSHORT(table + 6);
-          if (valueFormat1 == 4 && valueFormat2 == 0)
-          { // Support more formats?
-            stbtt_int32 valueRecordPairSizeInBytes = 2;
-            stbtt_uint16 pairSetCount = ttUSHORT(table + 8);
-            stbtt_uint16 pairPosOffset = ttUSHORT(table + 10 + 2 * coverageIndex);
-            stbtt_uint8* pairValueTable = table + pairPosOffset;
-            stbtt_uint16 pairValueCount = ttUSHORT(pairValueTable);
-            stbtt_uint8* pairValueArray = pairValueTable + 2;
+        case 1:
+          {
+            stbtt_int32 l, r, m;
+            int straw, needle;
+            stbtt_uint16 valueFormat1 = ttUSHORT(table + 4);
+            stbtt_uint16 valueFormat2 = ttUSHORT(table + 6);
+            if (valueFormat1 == 4 && valueFormat2 == 0)
+            { // Support more formats?
+              stbtt_int32 valueRecordPairSizeInBytes = 2;
+              stbtt_uint16 pairSetCount = ttUSHORT(table + 8);
+              stbtt_uint16 pairPosOffset = ttUSHORT(table + 10 + 2 * coverageIndex);
+              stbtt_uint8* pairValueTable = table + pairPosOffset;
+              stbtt_uint16 pairValueCount = ttUSHORT(pairValueTable);
+              stbtt_uint8* pairValueArray = pairValueTable + 2;
 
-            if (coverageIndex >= pairSetCount) return 0;
+              if (coverageIndex >= pairSetCount) return 0;
 
-            needle = glyph2;
-            r = pairValueCount - 1;
-            l = 0;
+              needle = glyph2;
+              r = pairValueCount - 1;
+              l = 0;
 
-            // Binary search.
-            while (l <= r)
-            {
-              stbtt_uint16 secondGlyph;
-              stbtt_uint8* pairValue;
-              m = (l + r) >> 1;
-              pairValue = pairValueArray + (2 + valueRecordPairSizeInBytes) * m;
-              secondGlyph = ttUSHORT(pairValue);
-              straw = secondGlyph;
-              if (needle < straw)
-                r = m - 1;
-              else if (needle > straw)
-                l = m + 1;
-              else
+              // Binary search.
+              while (l <= r)
               {
-                stbtt_int16 xAdvance = ttSHORT(pairValue + 2);
-                return xAdvance;
+                stbtt_uint16 secondGlyph;
+                stbtt_uint8* pairValue;
+                m = (l + r) >> 1;
+                pairValue = pairValueArray + (2 + valueRecordPairSizeInBytes) * m;
+                secondGlyph = ttUSHORT(pairValue);
+                straw = secondGlyph;
+                if (needle < straw)
+                  r = m - 1;
+                else if (needle > straw)
+                  l = m + 1;
+                else
+                {
+                  stbtt_int16 xAdvance = ttSHORT(pairValue + 2);
+                  return xAdvance;
+                }
               }
             }
+            else
+              return 0;
+            break;
           }
-          else
-            return 0;
-          break;
-        }
 
-      case 2:
-        {
-          stbtt_uint16 valueFormat1 = ttUSHORT(table + 4);
-          stbtt_uint16 valueFormat2 = ttUSHORT(table + 6);
-          if (valueFormat1 == 4 && valueFormat2 == 0)
-          { // Support more formats?
-            stbtt_uint16 classDef1Offset = ttUSHORT(table + 8);
-            stbtt_uint16 classDef2Offset = ttUSHORT(table + 10);
-            int glyph1class = stbtt__GetGlyphClass(table + classDef1Offset, glyph1);
-            int glyph2class = stbtt__GetGlyphClass(table + classDef2Offset, glyph2);
+        case 2:
+          {
+            stbtt_uint16 valueFormat1 = ttUSHORT(table + 4);
+            stbtt_uint16 valueFormat2 = ttUSHORT(table + 6);
+            if (valueFormat1 == 4 && valueFormat2 == 0)
+            { // Support more formats?
+              stbtt_uint16 classDef1Offset = ttUSHORT(table + 8);
+              stbtt_uint16 classDef2Offset = ttUSHORT(table + 10);
+              int glyph1class = stbtt__GetGlyphClass(table + classDef1Offset, glyph1);
+              int glyph2class = stbtt__GetGlyphClass(table + classDef2Offset, glyph2);
 
-            stbtt_uint16 class1Count = ttUSHORT(table + 12);
-            stbtt_uint16 class2Count = ttUSHORT(table + 14);
-            stbtt_uint8* class1Records, * class2Records;
-            stbtt_int16 xAdvance;
+              stbtt_uint16 class1Count = ttUSHORT(table + 12);
+              stbtt_uint16 class2Count = ttUSHORT(table + 14);
+              stbtt_uint8* class1Records, * class2Records;
+              stbtt_int16 xAdvance;
 
-            if (glyph1class < 0 || glyph1class >= class1Count) return 0; // malformed
-            if (glyph2class < 0 || glyph2class >= class2Count) return 0; // malformed
+              if (glyph1class < 0 || glyph1class >= class1Count) return 0; // malformed
+              if (glyph2class < 0 || glyph2class >= class2Count) return 0; // malformed
 
-            class1Records = table + 16;
-            class2Records = class1Records + 2 * (glyph1class * class2Count);
-            xAdvance = ttSHORT(class2Records + 2 * glyph2class);
-            return xAdvance;
+              class1Records = table + 16;
+              class2Records = class1Records + 2 * (glyph1class * class2Count);
+              xAdvance = ttSHORT(class2Records + 2 * glyph2class);
+              return xAdvance;
+            }
+            else
+              return 0;
+            break;
           }
-          else
-            return 0;
-          break;
-        }
 
-      default:
-        return 0; // Unsupported position format
+        default:
+          return 0; // Unsupported position format
       }
     }
   }
@@ -3935,35 +3935,35 @@ static stbtt__point* stbtt_FlattenCurves(stbtt_vertex* vertices, int num_verts, 
     {
       switch (vertices[i].type)
       {
-      case STBTT_vmove:
-        // start the next contour
-        if (n >= 0)
-          (*contour_lengths)[n] = num_points - start;
-        ++n;
-        start = num_points;
+        case STBTT_vmove:
+          // start the next contour
+          if (n >= 0)
+            (*contour_lengths)[n] = num_points - start;
+          ++n;
+          start = num_points;
 
-        x = vertices[i].x, y = vertices[i].y;
-        stbtt__add_point(points, num_points++, x, y);
-        break;
-      case STBTT_vline:
-        x = vertices[i].x, y = vertices[i].y;
-        stbtt__add_point(points, num_points++, x, y);
-        break;
-      case STBTT_vcurve:
-        stbtt__tesselate_curve(points, &num_points, x, y,
-          vertices[i].cx, vertices[i].cy,
-          vertices[i].x, vertices[i].y,
-          objspace_flatness_squared, 0);
-        x = vertices[i].x, y = vertices[i].y;
-        break;
-      case STBTT_vcubic:
-        stbtt__tesselate_cubic(points, &num_points, x, y,
-          vertices[i].cx, vertices[i].cy,
-          vertices[i].cx1, vertices[i].cy1,
-          vertices[i].x, vertices[i].y,
-          objspace_flatness_squared, 0);
-        x = vertices[i].x, y = vertices[i].y;
-        break;
+          x = vertices[i].x, y = vertices[i].y;
+          stbtt__add_point(points, num_points++, x, y);
+          break;
+        case STBTT_vline:
+          x = vertices[i].x, y = vertices[i].y;
+          stbtt__add_point(points, num_points++, x, y);
+          break;
+        case STBTT_vcurve:
+          stbtt__tesselate_curve(points, &num_points, x, y,
+            vertices[i].cx, vertices[i].cy,
+            vertices[i].x, vertices[i].y,
+            objspace_flatness_squared, 0);
+          x = vertices[i].x, y = vertices[i].y;
+          break;
+        case STBTT_vcubic:
+          stbtt__tesselate_cubic(points, &num_points, x, y,
+            vertices[i].cx, vertices[i].cy,
+            vertices[i].cx1, vertices[i].cy1,
+            vertices[i].x, vertices[i].y,
+            objspace_flatness_squared, 0);
+          x = vertices[i].x, y = vertices[i].y;
+          break;
       }
     }
     (*contour_lengths)[n] = num_points - start;
@@ -4321,46 +4321,46 @@ static void stbtt__h_prefilter(unsigned char* pixels, int w, int h, int stride_i
     // make kernel_width a constant in common cases so compiler can optimize out the divide
     switch (kernel_width)
     {
-    case 2:
-      for (i = 0; i <= safe_w; ++i)
-      {
-        total += pixels[i] - buffer[i & STBTT__OVER_MASK];
-        buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i];
-        pixels[i] = (unsigned char)(total / 2);
-      }
-      break;
-    case 3:
-      for (i = 0; i <= safe_w; ++i)
-      {
-        total += pixels[i] - buffer[i & STBTT__OVER_MASK];
-        buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i];
-        pixels[i] = (unsigned char)(total / 3);
-      }
-      break;
-    case 4:
-      for (i = 0; i <= safe_w; ++i)
-      {
-        total += pixels[i] - buffer[i & STBTT__OVER_MASK];
-        buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i];
-        pixels[i] = (unsigned char)(total / 4);
-      }
-      break;
-    case 5:
-      for (i = 0; i <= safe_w; ++i)
-      {
-        total += pixels[i] - buffer[i & STBTT__OVER_MASK];
-        buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i];
-        pixels[i] = (unsigned char)(total / 5);
-      }
-      break;
-    default:
-      for (i = 0; i <= safe_w; ++i)
-      {
-        total += pixels[i] - buffer[i & STBTT__OVER_MASK];
-        buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i];
-        pixels[i] = (unsigned char)(total / kernel_width);
-      }
-      break;
+      case 2:
+        for (i = 0; i <= safe_w; ++i)
+        {
+          total += pixels[i] - buffer[i & STBTT__OVER_MASK];
+          buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i];
+          pixels[i] = (unsigned char)(total / 2);
+        }
+        break;
+      case 3:
+        for (i = 0; i <= safe_w; ++i)
+        {
+          total += pixels[i] - buffer[i & STBTT__OVER_MASK];
+          buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i];
+          pixels[i] = (unsigned char)(total / 3);
+        }
+        break;
+      case 4:
+        for (i = 0; i <= safe_w; ++i)
+        {
+          total += pixels[i] - buffer[i & STBTT__OVER_MASK];
+          buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i];
+          pixels[i] = (unsigned char)(total / 4);
+        }
+        break;
+      case 5:
+        for (i = 0; i <= safe_w; ++i)
+        {
+          total += pixels[i] - buffer[i & STBTT__OVER_MASK];
+          buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i];
+          pixels[i] = (unsigned char)(total / 5);
+        }
+        break;
+      default:
+        for (i = 0; i <= safe_w; ++i)
+        {
+          total += pixels[i] - buffer[i & STBTT__OVER_MASK];
+          buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i];
+          pixels[i] = (unsigned char)(total / kernel_width);
+        }
+        break;
     }
 
     for (; i < w; ++i)
@@ -4391,46 +4391,46 @@ static void stbtt__v_prefilter(unsigned char* pixels, int w, int h, int stride_i
     // make kernel_width a constant in common cases so compiler can optimize out the divide
     switch (kernel_width)
     {
-    case 2:
-      for (i = 0; i <= safe_h; ++i)
-      {
-        total += pixels[i * stride_in_bytes] - buffer[i & STBTT__OVER_MASK];
-        buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i * stride_in_bytes];
-        pixels[i * stride_in_bytes] = (unsigned char)(total / 2);
-      }
-      break;
-    case 3:
-      for (i = 0; i <= safe_h; ++i)
-      {
-        total += pixels[i * stride_in_bytes] - buffer[i & STBTT__OVER_MASK];
-        buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i * stride_in_bytes];
-        pixels[i * stride_in_bytes] = (unsigned char)(total / 3);
-      }
-      break;
-    case 4:
-      for (i = 0; i <= safe_h; ++i)
-      {
-        total += pixels[i * stride_in_bytes] - buffer[i & STBTT__OVER_MASK];
-        buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i * stride_in_bytes];
-        pixels[i * stride_in_bytes] = (unsigned char)(total / 4);
-      }
-      break;
-    case 5:
-      for (i = 0; i <= safe_h; ++i)
-      {
-        total += pixels[i * stride_in_bytes] - buffer[i & STBTT__OVER_MASK];
-        buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i * stride_in_bytes];
-        pixels[i * stride_in_bytes] = (unsigned char)(total / 5);
-      }
-      break;
-    default:
-      for (i = 0; i <= safe_h; ++i)
-      {
-        total += pixels[i * stride_in_bytes] - buffer[i & STBTT__OVER_MASK];
-        buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i * stride_in_bytes];
-        pixels[i * stride_in_bytes] = (unsigned char)(total / kernel_width);
-      }
-      break;
+      case 2:
+        for (i = 0; i <= safe_h; ++i)
+        {
+          total += pixels[i * stride_in_bytes] - buffer[i & STBTT__OVER_MASK];
+          buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i * stride_in_bytes];
+          pixels[i * stride_in_bytes] = (unsigned char)(total / 2);
+        }
+        break;
+      case 3:
+        for (i = 0; i <= safe_h; ++i)
+        {
+          total += pixels[i * stride_in_bytes] - buffer[i & STBTT__OVER_MASK];
+          buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i * stride_in_bytes];
+          pixels[i * stride_in_bytes] = (unsigned char)(total / 3);
+        }
+        break;
+      case 4:
+        for (i = 0; i <= safe_h; ++i)
+        {
+          total += pixels[i * stride_in_bytes] - buffer[i & STBTT__OVER_MASK];
+          buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i * stride_in_bytes];
+          pixels[i * stride_in_bytes] = (unsigned char)(total / 4);
+        }
+        break;
+      case 5:
+        for (i = 0; i <= safe_h; ++i)
+        {
+          total += pixels[i * stride_in_bytes] - buffer[i & STBTT__OVER_MASK];
+          buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i * stride_in_bytes];
+          pixels[i * stride_in_bytes] = (unsigned char)(total / 5);
+        }
+        break;
+      default:
+        for (i = 0; i <= safe_h; ++i)
+        {
+          total += pixels[i * stride_in_bytes] - buffer[i & STBTT__OVER_MASK];
+          buffer[(i + kernel_width) & STBTT__OVER_MASK] = pixels[i * stride_in_bytes];
+          pixels[i * stride_in_bytes] = (unsigned char)(total / kernel_width);
+        }
+        break;
     }
 
     for (; i < h; ++i)
@@ -4851,8 +4851,8 @@ static int stbtt__compute_crossings_x(float x, float y, int nverts, stbtt_vertex
         q2[1] = (float)y2;
         if (equal(q0, q1) || equal(q1, q2))
         {
-          x0 = (int)verts[i - 1].x;
-          y0 = (int)verts[i - 1].y;
+          x0 = (int)verts[i - 1].x; //-V1048
+          y0 = (int)verts[i - 1].y; //-V1048
           x1 = (int)verts[i].x;
           y1 = (int)verts[i].y;
           if (y > STBTT_min(y0, y1) && y < STBTT_max(y0, y1) && x > STBTT_min(x0, x1))

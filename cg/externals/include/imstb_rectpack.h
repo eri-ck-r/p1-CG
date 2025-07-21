@@ -1,3 +1,4 @@
+
 // [DEAR IMGUI]
 // This is a slightly modified version of stb_rect_pack.h 1.01.
 // Grep for [DEAR IMGUI] to find the changes.
@@ -234,12 +235,12 @@ STBRP_DEF void stbrp_setup_heuristic(stbrp_context* context, int heuristic)
 {
   switch (context->init_mode)
   {
-  case STBRP__INIT_skyline:
-    STBRP_ASSERT(heuristic == STBRP_HEURISTIC_Skyline_BL_sortHeight || heuristic == STBRP_HEURISTIC_Skyline_BF_sortHeight);
-    context->heuristic = heuristic;
-    break;
-  default:
-    STBRP_ASSERT(0);
+    case STBRP__INIT_skyline:
+      STBRP_ASSERT(heuristic == STBRP_HEURISTIC_Skyline_BL_sortHeight || heuristic == STBRP_HEURISTIC_Skyline_BF_sortHeight);
+      context->heuristic = heuristic;
+      break;
+    default:
+      STBRP_ASSERT(0);
   }
 }
 
