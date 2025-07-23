@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2019, 2022 Paulo Pagliosa.                        |
+//| Copyright (C) 2019, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for triangle mesh BVH.
 //
 // Author: Paulo Pagliosa
-// Last revision: 21/01/2022
+// Last revision: 22/07/2025
 
 #ifndef __TriangleMeshBVH_h
 #define __TriangleMeshBVH_h
@@ -47,7 +47,7 @@ namespace cg
 class TriangleMeshBVH final: public BVHBase
 {
 public:
-  TriangleMeshBVH(const TriangleMesh&, uint32_t = 64);
+  TriangleMeshBVH(const TriangleMesh&, uint32_t = 20, SplitMethod = SAH);
 
   const TriangleMesh* mesh() const
   {

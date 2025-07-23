@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2019, 2024 Paulo Pagliosa.                        |
+//| Copyright (C) 2019, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Source file for BVH.
 //
 // Author: Paulo Pagliosa
-// Last revision: 01/05/2024
+// Last revision: 22/07/2025
 
 #include "geometry/BVH.h"
 #include <algorithm>
@@ -100,23 +100,6 @@ BVHBase::Node::iterate(const Node* node, NodeFunction f)
   }
 }
 
-inline BVHBase::Node*
-BVHBase::makeLeaf(PrimitiveInfoArray& primitiveInfo,
-  uint32_t start,
-  uint32_t end,
-  IndexArray& orderedPrimitiveIds)
-{
-  Bounds3f bounds;
-  auto first = uint32_t(orderedPrimitiveIds.size());
-
-  for (uint32_t i = start; i < end; ++i)
-  {
-    bounds.inflate(primitiveInfo[i].bounds);
-    orderedPrimitiveIds.push_back(_primitiveIds[primitiveInfo[i].index]);
-  }
-  return new Node{bounds, first, end - start};
-}
-
 inline auto
 maxDim(const Bounds3f& b)
 {
@@ -124,38 +107,150 @@ maxDim(const Bounds3f& b)
   return s.x > s.y && s.x > s.z ? 0 : (s.y > s.z ? 1 : 2);
 }
 
+/**
+ * @brief Build the nodes of this BVH.
+ * 
+ * The method is based on the source code of pbrt-v4 as
+ * described in the 4th edition of "Physically Based Rendering:
+ * From Theory to Implementation" by M. Pharr, Wenzel Jakob,
+ * and Greg Humphreys, and available at
+ * https://github.com/mmp/pbrt-v4.
+ * 
+ */
 BVHBase::Node*
-BVHBase::makeNode(PrimitiveInfoArray& primitiveInfo,
-  uint32_t start,
-  uint32_t end,
-  IndexArray& orderedPrimitiveIds)
+BVHBase::makeNode(const PrimitiveInfoArray& primitiveInfo,
+  uint32_t first,
+  uint32_t end)
 {
+  Bounds3f bounds;
+
+  // Compute the bounds of all primitives in the node.
+  for (auto i = first; i < end; ++i)
+    bounds.inflate(primitiveInfo[_primitiveIds[i]].bounds);
   ++_nodeCount;
-  if (end - start <= _maxPrimitivesPerNode)
-    return makeLeaf(primitiveInfo, start, end, orderedPrimitiveIds);
+
+  auto count = end - first;
+
+  // If the number of primitives is less than the maximum number
+  // of primitives per node, then create a leaf node.
+  if (count <= _maxPrimitivesPerNode)
+    return new Node{bounds, first, count};
 
   Bounds3f centroidBounds;
 
-  for (auto i = start; i < end; ++i)
-    centroidBounds.inflate(primitiveInfo[i].centroid);
+  // Compute the bounds of the primitive centroids.
+  for (auto i = first; i < end; ++i)
+    centroidBounds.inflate(primitiveInfo[_primitiveIds[i]].centroid);
 
   auto dim = maxDim(centroidBounds);
 
+  // If all primitive centroids are at the same position (volume
+  // of centroid bounds is zero), then create a leaf node.
   if (centroidBounds.max()[dim] == centroidBounds.min()[dim])
-    return makeLeaf(primitiveInfo, start, end, orderedPrimitiveIds);
+    return new Node{bounds, first, count};
 
-  // Partition primitives into two sets and build children
-  auto mid = (start + end) / 2;
+  const auto pidBegin = _primitiveIds.begin();
+  auto mid = (first + end) >> 1;
 
-  std::nth_element(&primitiveInfo[start],
-    &primitiveInfo[mid],
-    &primitiveInfo[end - 1] + 1,
-    [dim](const PrimitiveInfo& a, const PrimitiveInfo& b)
+  if (_splitMethod == Median)
+  // Partition primitives into two (equally sized) subsets using
+  // the median of the primitive centroids.
+    std::nth_element(pidBegin + first,
+      pidBegin + mid,
+      pidBegin + end,
+      [&primitiveInfo, dim](uint32_t a, uint32_t b)
+      {
+        const auto& pa = primitiveInfo[a];
+        const auto& pb = primitiveInfo[b];
+
+        return pa.centroid[dim] < pb.centroid[dim];
+      });
+  else
+  // Partition primitives using the approximate SAH.
+  {
+    constexpr int maxBuckets{12};
+    struct
     {
-      return a.centroid[dim] < b.centroid[dim];
-    });
-  return new Node{makeNode(primitiveInfo, start, mid, orderedPrimitiveIds),
-    makeNode(primitiveInfo, mid, end, orderedPrimitiveIds)};
+      int count{};
+      Bounds3f bounds;
+
+    } buckets[maxBuckets];
+    const auto x = centroidBounds[0][dim];
+    const auto s = maxBuckets / (centroidBounds[1][dim] - x);
+    const auto bucketId = [dim, x, s](const PrimitiveInfo& p)
+      {
+        auto bid = int(s * (p.centroid[dim] - x));
+
+        assert(bid >= 0 && bid <= maxBuckets);
+        return bid != maxBuckets ? bid : maxBuckets - 1;
+      };
+
+    // Initialize the data of all SAH partition buckets.
+    for (auto i = first; i < end; ++i)
+    {
+      const auto& p = primitiveInfo[_primitiveIds[i]];
+      auto bid = bucketId(p);
+
+      buckets[bid].count++;
+      buckets[bid].bounds.inflate(p.bounds);
+    }
+
+    // Compute the cost for splitting after each bucket.
+    constexpr int maxSplits{maxBuckets - 1};
+    float costs[maxSplits]{};
+    {
+      Bounds3f b;
+
+      for (int c = 0, i = 0; i < maxSplits;)
+      {
+        b.inflate(buckets[i].bounds);
+        c += buckets[i].count;
+        costs[i++] += c * b.area();
+      }
+    }
+    {
+      Bounds3f b;
+
+      for (int c = 0, i = maxSplits; i > 0;)
+      {
+        b.inflate(buckets[i].bounds);
+        c += buckets[i].count;
+        costs[--i] += c * b.area();
+      }
+    }
+
+    // Find a bucket to split at that minimizes the SAH metric.
+    auto minCostSplitBucket = -1;
+    auto minCost = math::Limits<float>::inf();
+
+    for (int i = 0; i < maxSplits; ++i)
+      if (costs[i] < minCost)
+      {
+        minCost = costs[i];
+        minCostSplitBucket = i;
+      }
+
+    const auto leafCost = float(count);
+    minCost = 1.f / 2.f + minCost / bounds.area();
+
+    // If the chosen bucket boundary for splitting does not have
+    // a lower cost than having a node with all primitives, then
+    // create a leaf node.
+    if (leafCost <= minCost)
+      return new Node{bounds, first, count};
+
+    // Otherwise, partition primitives.
+    auto mit = std::partition(pidBegin + first,
+      pidBegin + end,
+      [&primitiveInfo, &bucketId, minCostSplitBucket](uint32_t i)
+      {
+        return bucketId(primitiveInfo[i]) <= minCostSplitBucket;
+      });
+    mid = uint32_t(mit - pidBegin);
+  }
+  // Create an interior node and its two children.
+  return new Node{makeNode(primitiveInfo, first, mid),
+    makeNode(primitiveInfo, mid, end)};
 }
 
 BVHBase::~BVHBase()

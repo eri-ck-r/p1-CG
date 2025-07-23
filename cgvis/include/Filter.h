@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2018, 2022 Paulo Pagliosa.                        |
+//| Copyright (C) 2018, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for generic vis filter.
 //
 // Author: Paulo Pagliosa
-// Last revision: 08/03/2022
+// Last revision: 22/07/2025
 
 #ifndef __Filter_h
 #define __Filter_h
@@ -124,7 +124,7 @@ void
 Filter<Input, Output>::update()
 {
   if (!_inputConnection.isSet())
-    std::runtime_error("Filter::update(): no input");
+    throw std::runtime_error("Filter::update(): no input");
 
   auto input = _inputConnection.outputPort()->source();
 

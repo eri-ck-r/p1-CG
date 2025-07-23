@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2019, 2022 Paulo Pagliosa.                        |
+//| Copyright (C) 2019, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Source file for triangle mesh BVH.
 //
 // Author: Paulo Pagliosa
-// Last revision: 07/02/2022
+// Last revision: 22/07/2025
 
 #include "geometry/TriangleMeshBVH.h"
 
@@ -40,22 +40,21 @@ namespace cg
 //
 // TriangleMeshBVH implementation
 // ===============
-TriangleMeshBVH::TriangleMeshBVH(const TriangleMesh& mesh, uint32_t maxt):
-  BVHBase{maxt},
+TriangleMeshBVH::TriangleMeshBVH(const TriangleMesh& mesh,
+  uint32_t maxTrianglesPerNode,
+  SplitMethod splitMethod):
+  BVHBase{maxTrianglesPerNode, splitMethod},
   _mesh{&mesh}
 {
   const auto& m = _mesh->data();
   auto nt = (uint32_t)m.triangleCount;
 
   assert(nt > 0);
-  _primitiveIds.resize(nt);
 
   PrimitiveInfoArray primitiveInfo(nt);
 
   for (uint32_t i = 0; i < nt; ++i)
   {
-    _primitiveIds[i] = i;
-
     auto t = m.triangles + i;
     Bounds3f b;
 
@@ -95,7 +94,7 @@ TriangleMeshBVH::intersectLeaf(uint32_t first,
 
   for (auto i = first, e = i + count; i < e; ++i)
   {
-    auto tid = _primitiveIds[i];
+    auto tid = primitiveId(i);
     auto v = m.triangles[tid].v;
     const auto& p0 = m.vertices[v[0]];
     const auto& p1 = m.vertices[v[1]];
@@ -120,7 +119,7 @@ TriangleMeshBVH::intersectLeaf(uint32_t first,
 
   for (auto i = first, e = i + count; i < e; ++i)
   {
-    auto tid = _primitiveIds[i];
+    auto tid = primitiveId(i);
     auto v = m.triangles[tid].v;
     const auto& p0 = m.vertices[v[0]];
     const auto& p1 = m.vertices[v[1]];

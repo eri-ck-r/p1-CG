@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2019, 2020 Paulo Pagliosa.                        |
+//| Copyright (C) 2019, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for 2D axis-aligned bounding box.
 //
 // Author: Paulo Pagliosa
-// Last revision: 28/01/2020
+// Last revision: 21/07/2025
 
 #ifndef __Bounds2_h
 #define __Bounds2_h
@@ -39,6 +39,20 @@ namespace cg
 { // begin namespace cg
 
 template <typename real, int D> class Bounds;
+
+template <typename real>
+HOST DEVICE inline void
+inflate(Vector2<real>& p1, Vector2<real>& p2, real x, real y)
+{
+  if (x < p1.x)
+    p1.x = x;
+  if (x > p2.x)
+    p2.x = x;
+  if (y < p1.y)
+    p1.y = y;
+  if (y > p2.y)
+    p2.y = y;
+}
 
 
 /////////////////////////////////////////////////////////////////////
@@ -61,12 +75,6 @@ public:
     setEmpty();
   }
 
-  HOST DEVICE
-  Bounds(const vec2& min, const vec2& max)
-  {
-    set(min, max);
-  }
-
   template <typename V>
   HOST DEVICE
   Bounds(const V& p1, const V& p2):
@@ -76,39 +84,52 @@ public:
   }
 
   HOST DEVICE
-  Bounds(const Bounds<real, 2>& b, const mat3& m = mat3::identity()):
+  Bounds(const vec2& min, const vec2& max)
+  {
+    set(min, max);
+  }
+
+  HOST DEVICE
+  Bounds(const Bounds& b):
     _p1{b._p1},
     _p2{b._p2}
+  {
+    // do nothing
+  }
+
+  HOST DEVICE
+  Bounds(const Bounds& b, const mat3& m):
+    Bounds{b}
   {
     transform(m);
   }
 
   HOST DEVICE
-  vec2 center() const
+  auto center() const
   {
     return (_p1 + _p2) * real(0.5);
   }
 
   HOST DEVICE
-  real diagonalLength() const
+  auto diagonalLength() const
   {
     return size().length();
   }
 
   HOST DEVICE
-  vec2 size() const
+  auto size() const
   {
     return _p2 - _p1;
   }
 
   HOST DEVICE
-  real maxSize() const
+  auto maxSize() const
   {
     return size().max();
   }
 
   HOST DEVICE
-  real area() const
+  auto area() const
   {
     return (_p2.x - _p1.x) * (_p2.y - _p1.y);
   }
@@ -120,21 +141,28 @@ public:
   }
 
   HOST DEVICE
-  const vec2& min() const
+  auto& min() const
   {
     return _p1;
   }
 
   HOST DEVICE
-  const vec2& max() const
+  auto& max() const
   {
     return _p2;
   }
 
   HOST DEVICE
-  const vec2& operator [](int i) const
+  auto& operator [](int i) const
   {
     return (&_p1)[i];
+  }
+
+  /// Returns the union of this bounding box and b.
+  HOST DEVICE
+  auto operator +(const Bounds& b) const
+  {
+    return Bounds{math::min(_p1, b._p1), math::max(_p2, b._p2)};
   }
 
   HOST DEVICE
@@ -156,22 +184,9 @@ public:
   }
 
   HOST DEVICE
-  static void inflate(vec2& p1, vec2& p2, real x, real y)
-  {
-    if (x < p1.x)
-      p1.x = x;
-    if (x > p2.x)
-      p2.x = x;
-    if (y < p1.y)
-      p1.y = y;
-    if (y > p2.y)
-      p2.y = y;
-  }
-
-  HOST DEVICE
   void inflate(real x, real y)
   {
-    inflate(_p1, _p2, x, y);
+    cg::inflate(_p1, _p2, x, y);
   }
 
   template <typename V>
@@ -194,7 +209,7 @@ public:
   }
 
   HOST DEVICE
-  void inflate(const Bounds<real, 2>& b)
+  void inflate(const Bounds& b)
   {
     inflate(b._p1);
     inflate(b._p2);
@@ -230,7 +245,7 @@ public:
   }
 
   HOST DEVICE
-  bool intersect(const Ray<real, 2>& ray, real& tMin, real& tMax) const
+  bool intersect(const Ray2<real>& ray, real& tMin, real& tMax) const
   {
     tMin = -math::Limits<real>::inf();
     tMax = +math::Limits<real>::inf();
@@ -262,6 +277,16 @@ public:
     vec2* q1 = nullptr,
     vec2* q2 = nullptr) const;
 
+  HOST DEVICE
+  bool overlap(const Bounds& b) const
+  {
+    if (_p2.x < b._p1.x || _p1.x > b._p2.x)
+      return false;
+    if (_p2.y < b._p1.y || _p1.y > b._p2.y)
+      return false;
+    return true;
+  }
+
   void print(const char* s, FILE* f = stdout) const
   {
     fprintf(f, "%s\n", s);
@@ -274,7 +299,7 @@ private:
   vec2 _p2;
 
   HOST DEVICE
-  int outcode(const vec2 &p) const
+  auto outcode(const vec2 &p) const
   {
     return ((p.x < _p1.x)) |
       ((p.x > _p2.x) << 1) |

@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2018, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2018, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for block allocator.
 //
 // Author: Paulo Pagliosa
-// Last revision: 01/02/2023
+// Last revision: 21/07/2025
 
 #ifndef __BlockAllocator_h
 #define __BlockAllocator_h
@@ -42,7 +42,7 @@ namespace cg
 namespace internal
 { // begin namespace internal
 
-inline size_t
+inline constexpr size_t
 roundupVoidPtr(size_t size)
 {
   return (size + sizeof(void*) - 1) & -signed(sizeof(void*));

@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2019, 2024 Paulo Pagliosa.                        |
+//| Copyright (C) 2019, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,11 +28,12 @@
 // Class definition for BVH.
 //
 // Author: Paulo Pagliosa
-// Last revision: 01/05/2024
+// Last revision: 22/07/2024
 
 #ifndef __BVH_h
 #define __BVH_h
 
+#include "core/BlockAllocable.h"
 #include "core/SharedObject.h"
 #include "geometry/Bounds3.h"
 #include "geometry/Intersection.h"
@@ -52,9 +53,16 @@ namespace cg
 class BVHBase: public SharedObject
 {
 public:
+  enum class SplitMethod
+  {
+    SAH,
+    Median
+  };
+
   class NodeView;
 
   using NodeFunction = std::function<void(const NodeView&)>;
+  using enum SplitMethod;
 
   ~BVHBase() override;
 
@@ -85,21 +93,21 @@ protected:
   using PrimitiveInfoArray = std::vector<PrimitiveInfo>;
   using IndexArray = std::vector<uint32_t>;
 
-  IndexArray _primitiveIds;
-
-  BVHBase(uint32_t maxPrimitivesPerNode):
-    _maxPrimitivesPerNode{maxPrimitivesPerNode}
+  BVHBase(uint32_t maxPrimitivesPerNode, SplitMethod splitMethod):
+    _maxPrimitivesPerNode{maxPrimitivesPerNode},
+    _splitMethod{splitMethod}
   {
-    // do nothing
+    assert(maxPrimitivesPerNode > 0);
   }
 
-  void build(PrimitiveInfoArray& primitiveInfo)
+  void build(const PrimitiveInfoArray& primitiveInfo)
   {
     auto np = (uint32_t)primitiveInfo.size();
-    IndexArray orderedPrimitiveIds(np);
 
-    _root = makeNode(primitiveInfo, 0, np, orderedPrimitiveIds);
-    _primitiveIds.swap(orderedPrimitiveIds);
+    _primitiveIds.resize(np);
+    for (uint32_t i = 0; i < np; ++i)
+      _primitiveIds[i] = i;
+    _root = makeNode(primitiveInfo, 0, np);
   }
 
   virtual bool intersectLeaf(uint32_t, uint32_t, const Ray3f&) const = 0;
@@ -115,15 +123,16 @@ private:
   Node* _root{};
   uint32_t _nodeCount{};
   uint32_t _maxPrimitivesPerNode;
+  IndexArray _primitiveIds;
+  SplitMethod _splitMethod;
 
-  Node* makeNode(PrimitiveInfoArray&, uint32_t, uint32_t, IndexArray&);
-  Node* makeLeaf(PrimitiveInfoArray&, uint32_t, uint32_t, IndexArray&);
+  Node* makeNode(const PrimitiveInfoArray&, uint32_t, uint32_t);
 
   friend NodeView;
 
 }; // BVHBase
 
-class BVHBase::Node
+class BVHBase::Node: public BlockAllocable<BVHBase::Node, DflBlockSize>
 {
 public:
   ~Node()
@@ -147,10 +156,9 @@ private:
   }
 
   Node(Node* c0, Node* c1):
+    _bounds{c0->_bounds + c1->_bounds},
     _count{}
   {
-    _bounds.inflate(c0->_bounds);
-    _bounds.inflate(c1->_bounds);
     _children[0] = c0;
     _children[1] = c1;
   }
@@ -253,7 +261,7 @@ class BVH final: public BVHBase
 public:
   using PrimitiveArray = std::vector<Reference<T>>;
 
-  BVH(PrimitiveArray&&, uint32_t = 8);
+  BVH(PrimitiveArray&&, uint32_t = 8, SplitMethod = SAH);
 
   auto& primitives() const
   {
@@ -272,19 +280,20 @@ private:
 }; // BVH
 
 template <typename T>
-BVH<T>::BVH(PrimitiveArray&& primitives, uint32_t maxPrimitivesPerNode):
-  BVHBase{maxPrimitivesPerNode},
+BVH<T>::BVH(PrimitiveArray&& primitives,
+  uint32_t maxPrimitivesPerNode,
+  SplitMethod splitMethod):
+  BVHBase{maxPrimitivesPerNode, splitMethod},
   _primitives{std::move(primitives)}
 {
   auto np = (uint32_t)_primitives.size();
 
   assert(np > 0);
-  _primitiveIds.resize(np);
 
   PrimitiveInfoArray primitiveInfo(np);
 
   for (uint32_t i = 0; i < np; ++i)
-    primitiveInfo[i] = {_primitiveIds[i] = i, _primitives[i]->bounds()};
+    primitiveInfo[i] = {i, _primitives[i]->bounds()};
   build(primitiveInfo);
 }
 
@@ -294,7 +303,7 @@ BVH<T>::intersectLeaf(uint32_t first, uint32_t count, const Ray3f& ray) const
 {
   for (auto i = first, e = i + count; i < e; ++i)
   {
-    const auto& p = _primitives[_primitiveIds[i]];
+    const auto& p = _primitives[primitiveId(i)];
     Intersection temp;
 
     if (p->intersect(ray))
@@ -312,7 +321,7 @@ BVH<T>::intersectLeaf(uint32_t first,
 {
   for (auto i = first, e = i + count; i < e; ++i)
   {
-    const auto& p = _primitives[_primitiveIds[i]];
+    const auto& p = _primitives[primitiveId(i)];
     Intersection temp;
 
     if (p->intersect(ray, temp) && temp.distance < hit.distance)
