@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2018, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2018, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for generic list.
 //
 // Author: Paulo Pagliosa
-// Last revision: 26/08/2023
+// Last revision: 22/07/2025
 
 #ifndef __List_h
 #define __List_h
@@ -77,9 +77,9 @@ class List: public ListBase<ListNode<T, size>>
 public:
   using node_type = ListNode<T, size>;
   using Base = ListBase<node_type>;
-  using allocator = node_type::allocator;
-  using const_iterator = Base::const_iterator;
-  using iterator = Base::iterator;
+  using allocator = typename node_type::allocator;
+  using const_iterator = typename Base::const_iterator;
+  using iterator = typename Base::iterator;
 
   List() = default;
 

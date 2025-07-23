@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2018, 2022 Paulo Pagliosa.                        |
+//| Copyright (C) 2018, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for generic vis cell.
 //
 // Author: Paulo Pagliosa
-// Last revision: 11/03/2022
+// Last revision: 23/07/2025
 
 #ifndef __Cell_h
 #define __Cell_h
@@ -48,7 +48,7 @@ template <typename DataSet, int32_t nv>
 class Cell: public virtual SharedObject
 {
 public:
-  constexpr auto vertexCount() const
+  const auto vertexCount() const
   {
     return nv;
   }

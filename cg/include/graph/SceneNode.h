@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2018, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2018, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for generic scene node.
 //
 // Author: Paulo Pagliosa
-// Last revision: 13/06/2023
+// Last revision: 23/07/2025
 
 #ifndef __SceneNode_h
 #define __SceneNode_h
@@ -60,22 +60,12 @@ public:
     return *this;
   }
 
-  auto operator ==(NameableObject* object) const
-  {
-    return _object == object;
-  }
-
-  auto operator !=(NameableObject* object) const
-  {
-    return _object != object;
-  }
-
   auto operator ->() const
   {
     return _object;
   }
 
-  operator NameableObject*() const
+  operator NameableObject* () const
   {
     return _object;
   }
