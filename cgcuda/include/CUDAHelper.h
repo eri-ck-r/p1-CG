@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2014, 2021 Paulo Pagliosa.                        |
+//| Copyright (C) 2014, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Classes and functions for CUDA utilities.
 //
 // Author: Paulo Pagliosa
-// Last revision: 26/04/2021
+// Last revision: 23/07/2025
 
 #ifndef __CUDAHelper_h
 #define __CUDAHelper_h
@@ -36,11 +36,8 @@
 #include "core/Globals.h"
 #include <iostream>
 
-namespace cg
-{ // begin namespace cg
-
-namespace cuda
-{ // begin namespace cuda
+namespace cg::cuda
+{ // begin namespace cg::cuda
 
 void error(const char*, ...);
 void checkError(cudaError_t, const char*, int);
@@ -352,8 +349,6 @@ Buffer<T>::fill(const T& value, size_t offset, size_t length)
   delete []hData;
 }
 
-} // end namespace cuda
-
-} // end namespace cg
+} // end namespace cg::cuda
 
 #endif // __CUDAHelper_h

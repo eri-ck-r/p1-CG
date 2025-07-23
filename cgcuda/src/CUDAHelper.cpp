@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2014, 2021 Paulo Pagliosa.                        |
+//| Copyright (C) 2014, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,32 +28,28 @@
 // Source file for CUDA utilities.
 //
 // Author: Paulo Pagliosa
-// Last revision: 07/05/2021
+// Last revision: 23/07/2025
 
 #include <stdarg.h>
 #include <stdlib.h>
 
 #include "CUDAHelper.h"
 
-namespace cg
-{ // begin namespace cg
-
-namespace cuda
-{ // begin namespace cuda
-
-#define EM_MAXLEN 1023
+namespace cg::cuda
+{ // begin namespace cg::cuda
 
 void
 error(const char* fmt, ...)
 {
+  constexpr auto maxLen = 1023;
   va_list args;
-  char msg[EM_MAXLEN + 1];
+  char msg[maxLen + 1];
 
   va_start(args, fmt);
-  vsnprintf(msg, EM_MAXLEN, fmt, args);
+  vsnprintf(msg, maxLen, fmt, args);
   fprintf(stderr, "CUDA error: %s.\n", msg);
   fputs("Press any key to exit...", stderr);
-  getchar();
+  (void)getchar();
   exit(EXIT_FAILURE);
 }
 
@@ -92,6 +88,4 @@ checkLastError(const char* errorMessage, const char* file, int line)
   }
 }
 
-} // end namespace Cuda
-
-} // end namespace cg
+} // end namespace cg::cuda

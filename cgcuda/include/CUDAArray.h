@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2021, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2021, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,11 +28,12 @@
 // Classes for host and CUDA arrays.
 //
 // Author: Paulo Pagliosa
-// Last revision: 08/12/2023
+// Last revision: 23/07/2025
 
 #ifndef __CUDAArray_h
 #define __CUDAArray_h
 
+#include "core/Array.h"
 #include "core/SoA.h"
 #ifdef _USE_CUDA
 #include "CUDAHelper.h"

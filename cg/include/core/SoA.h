@@ -28,18 +28,27 @@
 // Class definition for structure of arrays.
 //
 // Author: Paulo Pagliosa
-// Last revision: 27/05/2025
+// Last revision: 23/07/2025
 
 #ifndef __SoA_h
 #define __SoA_h
 
-#include "core/Array.h"
 #include "core/Globals.h"
 #include <cassert>
+#include <concepts>
 #include <tuple>
 
 namespace cg
 { // begin namespace cg
+
+#define ASSERT_IS_NOT_VOID(T, msg) static_assert(!std::is_void_v<T>, msg)
+
+template <typename A, typename T>
+concept IsAllocator = requires (size_t n, T * ptr)
+{
+  { A::template allocate<T>(n) } -> std::same_as<T*>;
+  { A::template free<T>(ptr) };
+};
 
 template <typename index_t, typename... Args> class SoABase;
 
@@ -84,7 +93,7 @@ class Arrays
 public:
   template <typename Allocator>
   HOST DEVICE
-  void allocate(index_t n)
+  void allocate(size_t n)
   {
     // do nothing
   }
@@ -120,7 +129,7 @@ template <typename index_t, typename T, typename... Args>
 class Arrays<index_t, T, Args...>: private Arrays<index_t, Args...>
 {
 public:
-  static_assert(!std::is_void_v<T>, "SoA: array type cannot be void");
+  ASSERT_IS_NOT_VOID(T, "SoA: array type cannot be void");
 
   using Base = Arrays<index_t, Args...>;
 
@@ -139,13 +148,15 @@ public:
   }
 
   template <typename Allocator>
-  void allocate(index_t count)
+    requires IsAllocator<Allocator, T>
+  void allocate(size_t count)
   {
     Base::template allocate<Allocator>(count);
     data = Allocator::template allocate<T>(count);
   }
 
   template <typename Allocator>
+    requires IsAllocator<Allocator, T>
   void free()
   {
     Allocator::template free<T>(data);
@@ -416,7 +427,7 @@ protected:
 
 }; // SoABase
 
-   
+
 /////////////////////////////////////////////////////////////////////
 //
 // SoA: structure of arrays class
@@ -444,20 +455,20 @@ public:
   SoA(index_t size)
   {
     if ((this->_size = size) != 0)
-      this->_arrays.template allocate<Allocator>(size);
+      this->_arrays.template allocate<Allocator>((size_t)size);
   }
 
-  SoA(const type&) = delete;
-  type& operator =(const type&) = delete;
+  SoA(const SoA&) = delete;
+  SoA& operator =(const type&) = delete;
 
-  SoA(type&& other) noexcept
+  SoA(SoA&& other) noexcept
   {
     this->_size = other._size;
     this->_arrays = other._arrays;
     other._size = 0;
   }
 
-  type& operator =(type&& other) noexcept
+  SoA& operator =(SoA&& other) noexcept
   {
     if (this != &other)
     {
@@ -475,7 +486,7 @@ public:
       return false;
     this->~SoA();
     if ((this->_size = size) != 0)
-      this->_arrays.template allocate<Allocator>(size);
+      this->_arrays.template allocate<Allocator>((size_t)size);
     return true;
   }
 
