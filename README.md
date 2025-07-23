@@ -22,8 +22,8 @@ headers and source files are in the [cg/](/cg) folder. The only dependencies
 are [GLFW] and [Dear ImGui]. All headers, source files, and libraries needed
 are already included in the [cg/externals/](/cg/externals) folder.
 The project file for Visual Studio 2022 is located in the
-[cg/build/vs2022/](/cg/build/vs2022) folder. There is also a pre-compiled
-binary available in the [cg/lib/](/cg/lib) folder.
+[cg/build/vs2022/](/cg/build/vs2022) folder. There is also a (zipped)
+pre-compiled binary available in the [cg/lib/](/cg/lib) folder.
 
 ## Ds Demo
 
@@ -59,8 +59,8 @@ input dataset. Every actor in a scene has a mapper.
 
 All headers and source files of Ds-Vis are in the [cgvis/](/cgvis) folder.
 The project file for Visual Studio 2022 is located in the
-[cgvis/build/vs2022/](/cgvis/build/vs2022) folder. A pre-compiled binary is
-available in the [cgvis/lib/](/cgvis/lib) folder.
+[cgvis/build/vs2022/](/cgvis/build/vs2022) folder. A (zipped) pre-compiled
+binary is available in the [cgvis/lib/](/cgvis/lib) folder.
 
 ### Ds-Vis Demo
 
@@ -74,7 +74,7 @@ Visual Studio 2022 are in the
 
 ## Upcoming Changes
 
-Some of the goals for 2023 are:
+Some of the goals for 2025 are:
 
 - Full API documentation
 - CMake project and support for macOS and Linux with Clang and GCC
