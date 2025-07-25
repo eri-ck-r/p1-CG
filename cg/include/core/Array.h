@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2021, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2021, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class for generic array.
 //
 // Author: Paulo Pagliosa
-// Last revision: 19/07/2023
+// Last revision: 24/07/2025
 
 #ifndef __Array_h
 #define __Array_h
@@ -47,8 +47,8 @@ template <typename Array>
 class ArrayIterator
 {
 public:
-  using iterator = ArrayIterator<Array>;
   using value_type = typename Array::value_type;
+  using iterator = ArrayIterator<Array>;
 
   ArrayIterator(const Array* array, size_t index):
     _array{array},
@@ -67,7 +67,7 @@ public:
     return !operator ==(other);
   }
 
-  iterator& operator ++()
+  auto& operator ++()
   {
 #ifdef _DEBUG
     if (_index >= _array->size())
@@ -79,13 +79,13 @@ public:
 
   auto operator ++(int)
   {
-    iterator temp(*this);
+    auto temp = *this;
 
-    ++* this;
+    ++*this;
     return temp;
   }
 
-  iterator& operator --()
+  auto& operator --()
   {
 #ifdef _DEBUG
     if (_index == 0)
@@ -97,13 +97,13 @@ public:
 
   auto operator --(int)
   {
-    iterator temp(*this);
+    auto temp = *this;
 
     --* this;
     return temp;
   }
 
-  const value_type& operator *() const
+  const auto& operator *() const
   {
 #ifdef _DEBUG
     if (_index >= _array->size())
@@ -137,8 +137,6 @@ template <typename T, typename Allocator>
 class ArrayBase
 {
 public:
-  using base_type = ArrayBase<T, Allocator>;
-
   ~ArrayBase()
   {
     Allocator::template free<T>(_data);
@@ -153,7 +151,7 @@ public:
     // do nothing
   }
 
-  ArrayBase(base_type&& other) noexcept:
+  ArrayBase(ArrayBase&& other) noexcept:
     _data{other._data},
     _size{other._size}
   {
@@ -161,7 +159,7 @@ public:
     other._size = 0;
   }
 
-  auto& operator =(base_type&& other) noexcept
+  auto& operator =(ArrayBase&& other) noexcept
   {
     if (this != &other)
     {
@@ -179,7 +177,7 @@ public:
     return _size;
   }
 
-  const auto data() const
+  auto data() const
   {
     return _data;
   }
@@ -203,8 +201,8 @@ protected:
   T* _data{};
   size_t _size{};
 
-  ArrayBase(const base_type&) = delete;
-  base_type& operator =(const base_type&) = delete;
+  ArrayBase(const ArrayBase&) = delete;
+  ArrayBase& operator =(const ArrayBase&) = delete;
 
 }; // ArrayBase
 
@@ -243,7 +241,7 @@ public:
   using array_type = Array<T>;
   using ArrayBase<T, Allocator>::ArrayBase;
 
-  auto& copy(const array_type& other)
+  auto& copy(const Array& other)
   {
     if (this != &other)
     {
@@ -282,12 +280,12 @@ public:
 
   auto begin() const
   {
-    return ArrayIterator<array_type>{this, 0};
+    return ArrayIterator<Array>{this, 0};
   }
 
   auto end() const
   {
-    return ArrayIterator<array_type>{this, this->_size};
+    return ArrayIterator<Array>{this, this->_size};
   }
 
 }; // Array
