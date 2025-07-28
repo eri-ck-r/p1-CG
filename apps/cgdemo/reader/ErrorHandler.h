@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2007, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2007, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for generic error handler.
 //
 // Author: Paulo Pagliosa
-// Last revision: 06/07/2023
+// Last revision: 28/07/2025
 
 #ifndef __ErrorHandler_h
 #define __ErrorHandler_h
@@ -36,6 +36,7 @@
 #include "core/SharedObject.h"
 #include <cstdarg>
 #include <stdexcept>
+#include <string>
 
 namespace cg::parser
 { // begin namespace cg::parser
