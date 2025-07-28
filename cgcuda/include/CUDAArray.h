@@ -28,7 +28,7 @@
 // Classes for host and CUDA arrays.
 //
 // Author: Paulo Pagliosa
-// Last revision: 23/07/2025
+// Last revision: 28/07/2025
 
 #ifndef __CUDAArray_h
 #define __CUDAArray_h
@@ -57,9 +57,7 @@ class Array: public cg::Array<T>
 {
 public:
   using value_type = T;
-  using array_type = Array<T>;
-  using array_base = cg::Array<T>;
-  using array_base::Array;
+  using cg::Array<T>::Array;
 
   Array(const cuda::Array<T>&);
 
@@ -109,7 +107,6 @@ class Array: public ArrayBase<T, ArrayAllocator>
 {
 public:
   using value_type = T;
-  using array_type = Array<T>;
   using ArrayBase<T, ArrayAllocator>::ArrayBase;
 
   Array(const host::Array<T>& other):
@@ -118,7 +115,7 @@ public:
     copyToDevice<T>(this->_data, (const T*)other, other.size());
   }
 
-  auto& copy(const array_type& other)
+  auto& copy(const Array& other)
   {
     if (this != &other)
     {
