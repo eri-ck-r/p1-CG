@@ -28,7 +28,7 @@
 // Class definition for triangle mesh BVH.
 //
 // Author: Paulo Pagliosa
-// Last revision: 22/07/2025
+// Last revision: 29/07/2025
 
 #ifndef __TriangleMeshBVH_h
 #define __TriangleMeshBVH_h
@@ -47,7 +47,9 @@ namespace cg
 class TriangleMeshBVH final: public BVHBase
 {
 public:
-  TriangleMeshBVH(const TriangleMesh&, uint32_t = 20, SplitMethod = SAH);
+  TriangleMeshBVH(const TriangleMesh& mesh,
+    uint32_t maxTrianglesPerNode = 20,
+    SplitMethod splitMethod = SAH);
 
   const TriangleMesh* mesh() const
   {

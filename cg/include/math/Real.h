@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2014, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2014, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Math macros/static functions.
 //
 // Author: Paulo Pagliosa
-// Last revision: 30/07/2023
+// Last revision: 29/07/2025
 
 #ifndef __Real_h
 #define __Real_h
@@ -57,17 +57,17 @@ sign(real x)
 }
 
 /// Returns the greater of x and y.
-template <typename real>
-HOST DEVICE inline constexpr real
-max(real x, real y)
+template <typename T>
+HOST DEVICE inline constexpr auto
+max(T x, T y)
 {
   return x > y ? x : y;
 }
 
 /// Returns the smaller of x and y.
-template <typename real>
-HOST DEVICE inline constexpr real
-min(real x, real y)
+template <typename T>
+HOST DEVICE inline constexpr auto
+min(T x, T y)
 {
   return x < y ? x : y;
 }
@@ -173,9 +173,9 @@ cube(real x)
 }
 
 /// Swaps the values of x and y.
-template <typename real>
+template <typename T>
 HOST DEVICE inline void
-swap(real& x, real& y)
+swap(T& x, T& y)
 {
   auto t = x;
 
@@ -184,9 +184,9 @@ swap(real& x, real& y)
 }
 
 /// Returns a <= x <= b.
-template <typename real>
-HOST DEVICE inline constexpr real
-clamp(real x, real a, real b)
+template <typename T>
+HOST DEVICE inline constexpr auto
+clamp(T x, T a, T b)
 {
   return x < a ? a : (x > b ? b : x);
 }
