@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2014, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2014, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Source file for GLSL program.
 //
 // Author: Paulo Pagliosa
-// Last revision: 28/08/2023
+// Last revision: 28/07/2025
 
 #include "graphics/GLProgram.h"
 #include <cstdarg>
@@ -70,7 +70,7 @@ static const char* errorMessages[] =
 };
 
 static void
-error(ErrorCode code, ...)
+error(int code, ...)
 {
   const int bufferSize{4096};
   char buffer[bufferSize];

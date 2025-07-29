@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2014, 2024 Paulo Pagliosa.                        |
+//| Copyright (C) 2014, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for flags.
 //
 // Author: Paulo Pagliosa
-// Last revision: 05/03/2024
+// Last revision: 28/07/2025
 
 #ifndef __Flags_h
 #define __Flags_h
@@ -102,7 +102,7 @@ public:
   HOST DEVICE
   auto& operator |=(Flags flags)
   {
-    _bits |= flags.bits;
+    _bits |= flags._bits;
     return *this;
   }
 

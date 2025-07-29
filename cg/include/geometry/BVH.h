@@ -28,7 +28,7 @@
 // Class definition for BVH.
 //
 // Author: Paulo Pagliosa
-// Last revision: 22/07/2024
+// Last revision: 28/07/2025
 
 #ifndef __BVH_h
 #define __BVH_h
@@ -100,15 +100,7 @@ protected:
     assert(maxPrimitivesPerNode > 0);
   }
 
-  void build(const PrimitiveInfoArray& primitiveInfo)
-  {
-    auto np = (uint32_t)primitiveInfo.size();
-
-    _primitiveIds.resize(np);
-    for (uint32_t i = 0; i < np; ++i)
-      _primitiveIds[i] = i;
-    _root = makeNode(primitiveInfo, 0, np);
-  }
+  void build(const PrimitiveInfoArray&);
 
   virtual bool intersectLeaf(uint32_t, uint32_t, const Ray3f&) const = 0;
   virtual void intersectLeaf(uint32_t,
@@ -244,10 +236,21 @@ public:
 
 }; // BVHBase::PrimitiveInfo
 
-inline BVHBase::NodeView
-BVHBase::root() const
+inline auto
+BVHBase::root() const -> NodeView
 {
   return _root;
+}
+
+inline void
+BVHBase::build(const PrimitiveInfoArray& primitiveInfo)
+{
+  auto np = (uint32_t)primitiveInfo.size();
+
+  _primitiveIds.resize(np);
+  for (uint32_t i = 0; i < np; ++i)
+    _primitiveIds[i] = i;
+  _root = makeNode(primitiveInfo, 0, np);
 }
 
 
