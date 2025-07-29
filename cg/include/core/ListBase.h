@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2018, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2018, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for generic list base.
 //
 // Author: Paulo Pagliosa
-// Last revision: 19/07/2023
+// Last revision: 28/07/2025
 
 #ifndef __ListBase_h
 #define __ListBase_h
@@ -50,8 +50,8 @@ class ListConstIterator
 {
 public:
   using const_iterator = ListConstIterator<List>;
-  using node_type = typename List::node_type;
-  using node_value_type = typename node_type::value_type;
+  using node_type = List::node_type;
+  using node_value_type = node_type::value_type;
 
   ListConstIterator():
 #ifdef _DEBUG
@@ -156,8 +156,8 @@ class ListIterator: public ListConstIterator<List>
 public:
   using iterator = ListIterator<List>;
   using const_iterator = ListConstIterator<List>;
-  using node_type = typename const_iterator::node_type;
-  using node_value_type = typename const_iterator::node_value_type;
+  using node_type = const_iterator::node_type;
+  using node_value_type = const_iterator::node_value_type;
 
   using const_iterator::ListConstIterator;
 

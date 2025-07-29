@@ -28,7 +28,7 @@
 // Class definition for generic list.
 //
 // Author: Paulo Pagliosa
-// Last revision: 22/07/2025
+// Last revision: 28/07/2025
 
 #ifndef __List_h
 #define __List_h
@@ -77,9 +77,9 @@ class List: public ListBase<ListNode<T, size>>
 public:
   using node_type = ListNode<T, size>;
   using Base = ListBase<node_type>;
-  using allocator = typename node_type::allocator;
-  using const_iterator = typename Base::const_iterator;
-  using iterator = typename Base::iterator;
+  using allocator = node_type::allocator;
+  using const_iterator = Base::const_iterator;
+  using iterator = Base::iterator;
 
   List() = default;
 

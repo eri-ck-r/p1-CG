@@ -28,7 +28,7 @@
 // Class for generic array.
 //
 // Author: Paulo Pagliosa
-// Last revision: 24/07/2025
+// Last revision: 28/07/2025
 
 #ifndef __Array_h
 #define __Array_h
@@ -47,7 +47,7 @@ template <typename Array>
 class ArrayIterator
 {
 public:
-  using value_type = typename Array::value_type;
+  using value_type = Array::value_type;
   using iterator = ArrayIterator<Array>;
 
   ArrayIterator(const Array* array, size_t index):
