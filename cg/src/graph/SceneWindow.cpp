@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2020, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2020, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Source file for generic graph scene window.
 //
 // Author: Paulo Pagliosa
-// Last revision: 30/07/2023
+// Last revision: 03/08/2025
 
 #include "graph/SceneWindow.h"
 #include "graphics/Assets.h"
@@ -76,6 +76,23 @@ SceneWindow::renderScene()
 }
 
 void
+SceneWindow::drawSelectedPrimitive(const PrimitiveMapper& mapper,
+  const Color& color)
+{
+  auto p = mapper.primitive();
+
+  assert(p != nullptr);
+  if (auto mesh = p->tesselate())
+  {
+    auto editor = this->editor();
+
+    editor->setMeshColor(color);
+    editor->setPolygonMode(GLGraphics3::LINE);
+    editor->drawMesh(*mesh, p->localToWorldMatrix(), p->normalMatrix());
+  }
+}
+
+void
 SceneWindow::drawComponents(const SceneObject& object)
 {
   auto editor = this->editor();
@@ -85,21 +102,11 @@ SceneWindow::drawComponents(const SceneObject& object)
   for (auto end = components.end(), cit = ++components.begin(); cit != end;)
   {
     const Component* c{*cit++};
-    auto isCurrent = c->sceneObject() == _currentNode;
+    auto cn = c->sceneObject() == _currentNode;
 
     if (auto proxy = graph::asPrimitive(c))
-    {
-      auto p = proxy->mapper()->primitive();
-
-      assert(p != nullptr);
-      if (auto mesh = p->tesselate())
-      {
-        editor->setPolygonMode(GLGraphics3::LINE);
-        editor->setMeshColor(_selectedWireframeColor[!isCurrent]);
-        editor->drawMesh(*mesh, p->localToWorldMatrix(), p->normalMatrix());
-      }
-    }
-    else if (isCurrent)
+      drawSelectedPrimitive(*proxy->mapper(), _selectedWireframeColor[!cn]);
+    else if (cn)
       if (auto proxy = graph::asLight(c))
         editor->drawLight(*proxy->light());
       else if (auto proxy = graph::asCamera(c))

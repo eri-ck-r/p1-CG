@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2020, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2020, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for generic graph scene window.
 //
 // Author: Paulo Pagliosa
-// Last revision: 14/07/2023
+// Last revision: 03/08/2025
 
 #ifndef __GraphSceneWindow_h
 #define __GraphSceneWindow_h
@@ -119,6 +119,7 @@ protected:
 
   void drawSelectedObject(const SceneObject&);
   void drawComponents(const SceneObject&);
+  virtual void drawSelectedPrimitive(const PrimitiveMapper&, const Color&);
 
   virtual SceneObject* pickObject(int, int) const;
   SceneObject* pickObject(SceneObject*, const Ray3f&, float&) const;
