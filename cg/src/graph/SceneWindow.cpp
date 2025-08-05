@@ -28,7 +28,7 @@
 // Source file for generic graph scene window.
 //
 // Author: Paulo Pagliosa
-// Last revision: 03/08/2025
+// Last revision: 04/08/2025
 
 #include "graph/SceneWindow.h"
 #include "graphics/Assets.h"
@@ -191,6 +191,28 @@ SceneWindow::treeNode(SceneNode node, ImGuiTreeNodeFlags flags)
   return open;
 }
 
+bool
+SceneWindow::canDeleteSceneObject(const SceneObject&) const
+{
+  return true;
+}
+
+bool
+SceneWindow::deleteSceneObject(SceneObject& object)
+{
+  if (!canDeleteSceneObject(object))
+    return false;
+
+  auto parent = object.parent();
+
+  if (parent->parent() == nullptr)
+    _currentNode = parent->scene();
+  else
+    _currentNode = parent;
+  parent->removeChild(&object);
+  return true;
+}
+
 inline bool
 SceneWindow::deleteObjectPopup(SceneObject& object)
 {
@@ -199,16 +221,7 @@ SceneWindow::deleteObjectPopup(SceneObject& object)
   if (editHierarchy() && ImGui::BeginPopupContextItem())
   {
     if (ImGui::MenuItem("Delete###DeleteObject"))
-    {
-      auto parent = object.parent();
-
-      if (parent->parent() == nullptr)
-        _currentNode = parent->scene();
-      else
-        _currentNode = parent;
-      parent->removeChild(&object);
-      deleted = true;
-    }
+      deleted = deleteSceneObject(object);
     ImGui::EndPopup();
   }
   return deleted;
@@ -500,6 +513,12 @@ SceneWindow::inspectCurrentNode()
     inspectSceneObject(*sceneObject);
 }
 
+bool
+SceneWindow::inspectCurrentCommand()
+{
+  return false;
+}
+
 void
 SceneWindow::inspectorWindow(const char* title)
 {
@@ -507,7 +526,8 @@ SceneWindow::inspectorWindow(const char* title)
     return;
   assert(title != nullptr);
   ImGui::Begin(title);
-  inspectCurrentNode();
+  if (!inspectCurrentCommand())
+    inspectCurrentNode();
   ImGui::End();
 }
 
@@ -618,18 +638,28 @@ SceneWindow::onMouseLeftPress(int x, int y)
 bool
 SceneWindow::onKeyPress(int key, int)
 {
-  if (_viewMode != ViewMode::Editor || key != GLFW_KEY_F)
+  if (_viewMode != ViewMode::Editor)
     return false;
   if (auto object = _currentNode.as<SceneObject>())
-  {
-    auto editor = this->editor();
-    auto camera = editor->camera();
-    auto d = camera->viewPlaneNormal();
-    auto p = object->transform()->position();
+    switch (key)
+    {
+      case GLFW_KEY_DELETE:
+        deleteSceneObject(*object);
+        break;
+      case GLFW_KEY_F:
+      {
+        auto editor = this->editor();
+        auto camera = editor->camera();
+        auto d = camera->viewPlaneNormal();
+        auto p = object->transform()->position();
 
-    // TODO: set view angle/height and distance
-    camera->setPosition(p + d * editor->orbitDistance());
-  }
+        // TODO: set view angle/height and distance
+        camera->setPosition(p + d * editor->orbitDistance());
+        break;
+      }
+      default:
+        return false;
+    }
   return true;
 }
 

@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2018, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2018, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for OpenGL window.
 //
 // Author: Paulo Pagliosa
-// Last revision: 05/09/2023
+// Last revision: 04/08/2025
 
 #ifndef __GLWindow_h
 #define __GLWindow_h
@@ -69,6 +69,29 @@ public:
   auto height() const
   {
     return _height;
+  }
+
+  /// Returns the elapsed time since the last frame.
+  auto deltaTime() const
+  {
+    return _deltaTime;
+  }
+
+  /// Returns the cursor position on this window.
+  void cursorPosition(int& x, int& y) const
+  {
+    double xpos;
+    double ypos;
+
+    glfwGetCursorPos(_window, &xpos, &ypos);
+    x = (int)xpos;
+    y = (int)ypos;
+  }
+
+  /// Returns true if \c key is pressed.
+  bool isKeyPressed(int key) const
+  {
+    return glfwGetKey(_window, key) == GLFW_PRESS;
   }
 
 protected:
@@ -117,29 +140,6 @@ protected:
   void clear()
   {
     clear(backgroundColor);
-  }
-
-  /// Returns the elapsed time since the last frame.
-  auto deltaTime() const
-  {
-    return _deltaTime;
-  }
-
-  /// Returns the cursor position on this window.
-  void cursorPosition(int& x, int& y) const
-  {
-    double xpos;
-    double ypos;
-
-    glfwGetCursorPos(_window, &xpos, &ypos);
-    x = (int)xpos;
-    y = (int)ypos;
-  }
-
-  /// Returns true if \c key is pressed.
-  bool isKeyPressed(int key) const
-  {
-    return glfwGetKey(_window, key) == GLFW_PRESS;
   }
 
   void shutdown()

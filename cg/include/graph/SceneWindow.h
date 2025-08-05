@@ -28,7 +28,7 @@
 // Class definition for generic graph scene window.
 //
 // Author: Paulo Pagliosa
-// Last revision: 03/08/2025
+// Last revision: 04/08/2025
 
 #ifndef __GraphSceneWindow_h
 #define __GraphSceneWindow_h
@@ -49,22 +49,20 @@ namespace cg::graph
 class SceneWindow: public SceneWindowBase, public SceneObjectBuilder
 {
 public:
-  template <typename W = SceneWindow, typename C = SharedObject>
-  using InspectFunction = void (*)(W&, C&);
-
-  template <typename W, typename C>
-  void registerInspectFunction(InspectFunction<W, C> function)
-  {
-    assert(function != nullptr);
-    _inspectFunctions[typeid(C).hash_code()] = (InspectFunction<>)function;
-  }
-
   Scene* scene() const
   {
     return (Scene*)editor()->scene();
   }
 
+  auto currentNode() const
+  {
+    return _currentNode;
+  }
+
 protected:
+  template <typename W = SceneWindow, typename C = SharedObject>
+  using InspectFunction = void (*)(W&, C&);
+
   enum class ViewMode
   {
     Editor = 0,
@@ -81,6 +79,13 @@ protected:
     bool sceneObjects : 1;
 
   } _editFlags{};
+
+  template <typename W, typename C>
+  void registerInspectFunction(InspectFunction<W, C> function)
+  {
+    assert(function != nullptr);
+    _inspectFunctions[typeid(C).hash_code()] = (InspectFunction<>)function;
+  }
 
   SceneWindow(const char* title, int width, int height):
     SceneWindowBase{title, width, height}
@@ -106,7 +111,6 @@ protected:
   }
 
   virtual Scene* makeNewScene() const;
-
   void setScene(Scene&);
 
   void render() override;
@@ -120,6 +124,9 @@ protected:
   void drawSelectedObject(const SceneObject&);
   void drawComponents(const SceneObject&);
   virtual void drawSelectedPrimitive(const PrimitiveMapper&, const Color&);
+
+  virtual bool canDeleteSceneObject(const SceneObject&) const;
+  bool deleteSceneObject(SceneObject&);
 
   virtual SceneObject* pickObject(int, int) const;
   SceneObject* pickObject(SceneObject*, const Ray3f&, float&) const;
@@ -137,6 +144,7 @@ protected:
     }
   }
 
+  virtual bool inspectCurrentCommand();
   virtual void assetPanels();
   virtual void materialPanel();
   virtual void meshPanel();
@@ -154,7 +162,7 @@ private:
   SceneNode _currentNode{};
   InspectMap _inspectFunctions;
 
-  SceneBase* makeScene() final;
+  SceneBase* makeScene() override;
 
   void createObjectButton();
   bool treeNode(SceneNode, ImGuiTreeNodeFlags);

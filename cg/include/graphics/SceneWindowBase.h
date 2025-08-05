@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2022, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2022, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for scene window base.
 //
 // Author: Paulo Pagliosa
-// Last revision: 30/08/2023
+// Last revision: 04/08/2025
 
 #ifndef __SceneWindowBase_h
 #define __SceneWindowBase_h
@@ -52,6 +52,8 @@ public:
   {
     return _editor;
   }
+
+  Ray3f makeRay(int x, int y) const;
 
 protected:
   Color _selectedWireframeColor[2]
@@ -86,7 +88,6 @@ protected:
   bool showErrorMessage(const char*) const;
 
   Material* createMaterial();
-  Ray3f makeRay(int, int) const;
 
   static void inspectCamera(Camera&);
   static void inspectLight(Light&);
