@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2014, 2022 Paulo Pagliosa.                        |
+//| Copyright (C) 2014, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for 2D index.
 //
 // Author: Paulo Pagliosa
-// Last revision: 13/12/2022
+// Last revision: 06/08/2025
 
 #ifndef __Index2_h
 #define __Index2_h
@@ -58,15 +58,15 @@ template <int D, typename T = int64_t> struct Index;
 template <typename T>
 struct Index<2, T>
 {
-  ASSERT_INT(T, "Index2: integral type expected");
+  ASSERT_INT(T, "Index2: integral Index expected");
 
   using type = Index<2, T>;
   using base_type = T;
 
   union
   {
-    struct { base_type x, y; };
-    struct { base_type u, v; };
+    struct { T x; T y; };
+    struct { T i; T j; };
   };
 
   HOST DEVICE
@@ -76,7 +76,7 @@ struct Index<2, T>
   }
 
   HOST DEVICE
-  Index(base_type i, base_type j)
+  Index(T i, T j)
   {
     set(i, j);
   }
@@ -89,7 +89,7 @@ struct Index<2, T>
   }
 
   HOST DEVICE
-  void set(base_type i, base_type j)
+  void set(T i, T j)
   {
     x = i;
     y = j;
@@ -100,40 +100,40 @@ struct Index<2, T>
   void set(const V& v)
   {
     if constexpr (std::is_integral_v<V>)
-      x = y = base_type(v);
+      x = y = T(v);
     else
-      set(base_type(v.x), base_type(v.y));
+      set(T(v.x), T(v.y));
   }
 
   HOST DEVICE
-  auto& operator =(base_type i)
+  auto& operator =(T i)
   {
     set(i, i);
     return *this;
   }
 
   HOST DEVICE
-  auto operator +(const type& other) const
+  auto operator +(const Index& other) const
   {
-    return type{x + other.x, y + other.y};
+    return Index{x + other.x, y + other.y};
   }
 
   HOST DEVICE
-  auto operator +(base_type i) const
+  auto operator +(T i) const
   {
-    return operator +(type{i});
+    return operator +(Index{i});
   }
 
   HOST DEVICE
-  auto operator -(const type& other) const
+  auto operator -(const Index& other) const
   {
-    return type{x - other.x, y - other.y};
+    return Index{x - other.x, y - other.y};
   }
 
   HOST DEVICE
-  auto operator -(base_type i) const
+  auto operator -(T i) const
   {
-    return operator -(type{i});
+    return operator -(Index{i});
   }
 
   HOST DEVICE
@@ -149,13 +149,13 @@ struct Index<2, T>
   }
 
   HOST DEVICE
-  bool operator ==(const type& other) const
+  bool operator ==(const Index& other) const
   {
     return x == other.x && y == other.y;
   }
 
   HOST DEVICE
-  bool operator !=(const type& other) const
+  bool operator !=(const Index& other) const
   {
     return !operator ==(other);
   }
@@ -173,7 +173,7 @@ struct Index<2, T>
   }
 
   HOST DEVICE
-  auto& clamp(const type& s)
+  auto& clamp(const Index& s)
   {
     x = x < 0 ? 0 : math::min(x, s.x - 1);
     y = y < 0 ? 0 : math::min(y, s.y - 1);

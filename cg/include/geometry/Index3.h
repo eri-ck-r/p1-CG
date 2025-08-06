@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2014, 2022 Paulo Pagliosa.                        |
+//| Copyright (C) 2014, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for 3D index.
 //
 // Author: Paulo Pagliosa
-// Last revision: 13/12/2022
+// Last revision: 06/08/2025
 
 #ifndef __Index3_h
 #define __Index3_h
@@ -46,14 +46,16 @@ namespace cg
 template <typename T>
 struct Index<3, T>
 {
-  ASSERT_INT(T, "Index3: integral type expected");
+  ASSERT_INT(T, "Index3: integral Index expected");
 
   using type = Index<3, T>;
   using base_type = T;
 
-  base_type x;
-  base_type y;
-  base_type z;
+  union
+  {
+    struct { T x; T y; T z; };
+    struct { T i; T j; T k; };
+  };
 
   HOST DEVICE
   Index()
@@ -62,13 +64,13 @@ struct Index<3, T>
   }
 
   HOST DEVICE
-  Index(base_type i, base_type j, base_type k = 0)
+  Index(T i, T j, T k = 0)
   {
     set(i, j, k);
   }
 
   HOST DEVICE
-  explicit Index(base_type i)
+  explicit Index(T i)
   {
     set(i, i, i);
   }
@@ -85,13 +87,13 @@ struct Index<3, T>
   void set(const V& v)
   {
     if constexpr (std::is_integral_v<V>)
-      x = y = z = base_type(v);
+      x = y = z = T(v);
     else
-      set(base_type(v.x), base_type(v.y), base_type(v.z));
+      set(T(v.x), T(v.y), T(v.z));
   }
 
   HOST DEVICE
-  void set(base_type i, base_type j, base_type k = 0)
+  void set(T i, T j, T k = 0)
   {
     x = i;
     y = j;
@@ -99,34 +101,34 @@ struct Index<3, T>
   }
 
   HOST DEVICE
-  auto& operator =(base_type i)
+  auto& operator =(T i)
   {
     set(i, i, i);
     return *this;
   }
 
   HOST DEVICE
-  auto operator +(const type& other) const
+  auto operator +(const Index& other) const
   {
-    return type{x + other.x, y + other.y, z + other.z};
+    return Index{x + other.x, y + other.y, z + other.z};
   }
 
   HOST DEVICE
-  auto operator +(base_type i) const
+  auto operator +(T i) const
   {
-    return operator +(type{i});
+    return operator +(Index{i});
   }
 
   HOST DEVICE
-  auto operator -(const type& other) const
+  auto operator -(const Index& other) const
   {
-    return type{x - other.x, y - other.y, z - other.z};
+    return Index{x - other.x, y - other.y, z - other.z};
   }
 
   HOST DEVICE
-  auto operator -(base_type i) const
+  auto operator -(T i) const
   {
-    return operator -(type{i});
+    return operator -(Index{i});
   }
 
   HOST DEVICE
@@ -142,13 +144,13 @@ struct Index<3, T>
   }
 
   HOST DEVICE
-  bool operator ==(const type& other) const
+  bool operator ==(const Index& other) const
   {
     return x == other.x && y == other.y && z == other.z;
   }
 
   HOST DEVICE
-  bool operator !=(const type& other) const
+  bool operator !=(const Index& other) const
   {
     return !operator ==(other);
   }
@@ -166,7 +168,7 @@ struct Index<3, T>
   }
 
   HOST DEVICE
-  auto& clamp(const type& s)
+  auto& clamp(const Index& s)
   {
     x = x < 0 ? 0 : math::min(x, s.x - 1);
     y = y < 0 ? 0 : math::min(y, s.y - 1);
