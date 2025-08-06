@@ -28,7 +28,7 @@
 // Class definition for structure of arrays.
 //
 // Author: Paulo Pagliosa
-// Last revision: 23/07/2025
+// Last revision: 06/08/2025
 
 #ifndef __SoA_h
 #define __SoA_h
@@ -443,7 +443,7 @@ public:
 
   ~SoA()
   {
-    if (this->_size != 0)
+    if (this->_size > 0)
       this->_arrays.template free<Allocator>();
   }
 
@@ -454,7 +454,7 @@ public:
 
   SoA(index_t size)
   {
-    if ((this->_size = size) != 0)
+    if ((this->_size = size) > 0)
       this->_arrays.template allocate<Allocator>((size_t)size);
   }
 
@@ -485,7 +485,7 @@ public:
     if (size == this->_size)
       return false;
     this->~SoA();
-    if ((this->_size = size) != 0)
+    if ((this->_size = size) > 0)
       this->_arrays.template allocate<Allocator>((size_t)size);
     return true;
   }
