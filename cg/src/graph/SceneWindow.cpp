@@ -28,7 +28,7 @@
 // Source file for generic graph scene window.
 //
 // Author: Paulo Pagliosa
-// Last revision: 04/08/2025
+// Last revision: 06/08/2025
 
 #include "graph/SceneWindow.h"
 #include "graphics/Assets.h"
@@ -294,7 +294,6 @@ SceneWindow::hierarchyWindow(const char* title)
   ImGui::Begin(title);
   ImGui::BeginDisabled(!editHierarchy());
   createObjectButton();
-  ImGui::EndDisabled();
   ImGui::Separator();
   if (treeNode(_scene.get(), ImGuiTreeNodeFlags_OpenOnArrow))
   {
@@ -304,6 +303,7 @@ SceneWindow::hierarchyWindow(const char* title)
     objectHierarchy(*root);
     ImGui::TreePop();
   }
+  ImGui::EndDisabled();
   ImGui::End();
 }
 
