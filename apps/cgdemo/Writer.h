@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2010, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2010, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Class definition for generic writer.
 //
 // Author: Paulo Pagliosa
-// Last revision: 10/07/2023
+// Last revision: 07/08/2025
 
 #ifndef __Writer_h
 #define __Writer_h
@@ -105,6 +105,13 @@ public:
   void endLine()
   {
     _out << '\n';
+  }
+
+  template <typename T>
+  auto& operator <<(const T& value)
+  {
+    _out << value;
+    return *this;
   }
 
 private:
