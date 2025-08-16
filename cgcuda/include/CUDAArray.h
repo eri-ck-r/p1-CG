@@ -28,7 +28,7 @@
 // Classes for host and CUDA arrays.
 //
 // Author: Paulo Pagliosa
-// Last revision: 28/07/2025
+// Last revision: 16/08/2025
 
 #ifndef __CUDAArray_h
 #define __CUDAArray_h
@@ -112,11 +112,13 @@ public:
   Array(const host::Array<T>& other):
     ArrayBase<T, ArrayAllocator>{other.size()}
   {
+    static_assert(std::is_trivially_copyable_v<T>);
     copyToDevice<T>(this->_data, (const T*)other, other.size());
   }
 
   auto& copy(const Array& other)
   {
+    static_assert(std::is_trivially_copyable_v<T>);
     if (this != &other)
     {
 #ifdef _DEBUG
@@ -130,6 +132,7 @@ public:
 
   auto& zero()
   {
+    static_assert(std::is_scalar_v<T>);
     deviceSet(this->_data, 0, this->_size * sizeof(T));
     return *this;
   }
@@ -148,6 +151,7 @@ inline
 Array<T>::Array(const cuda::Array<T>& other):
   cg::Array<T>{other.size()}
 {
+  static_assert(std::is_trivially_copyable_v<T>);
   cuda::copyToHost<T>(this->_data, (const T*)other, other.size());
 }
 

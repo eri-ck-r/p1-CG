@@ -28,12 +28,14 @@
 // Class for generic array.
 //
 // Author: Paulo Pagliosa
-// Last revision: 28/07/2025
+// Last revision: 16/08/2025
 
 #ifndef __Array_h
 #define __Array_h
 
+#include <algorithm>
 #include <stdexcept>
+#include <type_traits>
 
 namespace cg
 { // begin namespace cg
@@ -249,14 +251,25 @@ public:
       if (this->_size != other._size)
         throw std::logic_error{"Bad array size"};
 #endif // _DEBUG
-      memcpy(this->_data, other._data, this->_size * sizeof(T));
+      if constexpr (std::is_trivially_copyable_v<T>)
+        memcpy(this->_data, other._data, this->_size * sizeof(T));
+      else
+        for (size_t i = 0; i < this->_size; ++i)
+          this->_data[i] = other._data[i];
     }
     return *this;
   }
 
   auto& zero()
   {
-    memset(this->_data, 0, this->_size * sizeof(T));
+    if constexpr (std::is_scalar_v<T>)
+      memset(this->_data, 0, this->_size * sizeof(T));
+    else
+    {
+      static_assert(std::is_default_constructible_v<T>);
+      for (size_t i = 0; i < this->_size; ++i)
+        this->_data[i] = T{};
+    }
     return *this;
   }
 
