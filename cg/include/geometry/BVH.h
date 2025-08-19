@@ -28,7 +28,7 @@
 // Class definition for BVH.
 //
 // Author: Paulo Pagliosa
-// Last revision: 28/07/2025
+// Last revision: 19/08/2025
 
 #ifndef __BVH_h
 #define __BVH_h
@@ -172,13 +172,17 @@ private:
 class BVHBase::NodeView
 {
 public:
+  NodeView() = default;
+
   const auto& bounds() const
   {
+    assert(_node);
     return _node->_bounds;
   }
 
   auto isLeaf() const
   {
+    assert(_node);
     return _node->isLeaf();
   }
 
@@ -191,11 +195,13 @@ public:
 
   auto first() const
   {
+    assert(_node);
     return _node->_first;
   }
 
   auto count() const
   {
+    assert(_node);
     return _node->_count;
   }
 
@@ -205,7 +211,7 @@ public:
   }
 
 private:
-  const Node* _node;
+  const Node* _node{};
 
   NodeView(const Node* node):
     _node{node}

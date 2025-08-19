@@ -28,7 +28,7 @@
 // Class for generic array.
 //
 // Author: Paulo Pagliosa
-// Last revision: 16/08/2025
+// Last revision: 19/08/2025
 
 #ifndef __Array_h
 #define __Array_h
@@ -262,14 +262,8 @@ public:
 
   auto& zero()
   {
-    if constexpr (std::is_scalar_v<T>)
-      memset(this->_data, 0, this->_size * sizeof(T));
-    else
-    {
-      static_assert(std::is_default_constructible_v<T>);
-      for (size_t i = 0; i < this->_size; ++i)
-        this->_data[i] = T{};
-    }
+    static_assert(std::is_trivially_copyable_v<T>);
+    memset(this->_data, 0, this->_size * sizeof(T));
     return *this;
   }
 

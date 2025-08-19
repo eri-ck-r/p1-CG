@@ -28,7 +28,7 @@
 // Classes for host and CUDA arrays.
 //
 // Author: Paulo Pagliosa
-// Last revision: 16/08/2025
+// Last revision: 19/08/2025
 
 #ifndef __CUDAArray_h
 #define __CUDAArray_h
@@ -132,7 +132,7 @@ public:
 
   auto& zero()
   {
-    static_assert(std::is_scalar_v<T>);
+    static_assert(std::is_trivially_copyable_v<T>);
     deviceSet(this->_data, 0, this->_size * sizeof(T));
     return *this;
   }
