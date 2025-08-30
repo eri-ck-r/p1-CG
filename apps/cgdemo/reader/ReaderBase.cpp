@@ -28,7 +28,7 @@
 // Source file for generic reader base.
 //
 // Author: Paulo Pagliosa
-// Last revision: 07/08/2025
+// Last revision: 30/08/2025
 
 #include "math/Matrix3x3.h"
 #include "ReaderBase.h"
@@ -310,7 +310,7 @@ _float:
   {
     if (isdigit(++buffer()))
       goto _float;
-    error(UNEXPECTED_CHAR, *buffer());
+    return '.';
   }
   if (*buffer() == '"')
   {
@@ -349,6 +349,12 @@ _float:
     case ':':
     case '=':
     case ';':
+    case '?':
+    case '!':
+    case '~':
+    case '%':
+    case '^':
+    case '&':
       break;
     default:
       error(UNEXPECTED_CHAR, c);
