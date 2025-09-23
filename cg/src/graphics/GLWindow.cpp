@@ -54,8 +54,11 @@ GLWindow::GLWindow(const char* title, int width, int height):
 
 GLWindow::~GLWindow()
 {
-  if (_window != nullptr)
+  if (_window)
+  {
     glfwDestroyWindow(_window);
+    _window = nullptr;
+  }
 }
 
 bool
