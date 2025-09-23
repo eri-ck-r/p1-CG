@@ -19,11 +19,12 @@ and geometric processing.
 
 The current master version is 1.3 and supports Windows 11 and Linux. All
 headers and source files are in the [cg/](/cg) folder. The only dependencies
-are [GLFW] and [Dear ImGui]. All headers, source files, and libraries (for Windows)
-needed are already included in the [cg/externals/](/cg/externals) folder (GLFW3 is
-requered for Linux). The project file for Visual Studio 2022 is located in the
-[cg/build/vs2022/](/cg/build/vs2022) folder. There is also a (zipped)
-pre-compiled binary (for Windows) available in the [cg/lib/](/cg/lib) folder.
+are [GLFW] 3.4 and [Dear ImGui]. All headers, source files, and libraries (for
+Windows) needed are already included in the [cg/externals/](/cg/externals)
+folder (package glfw3 is required for Linux). The project file for Visual
+Studio 2022 is located in the [cg/build/vs2022/](/cg/build/vs2022) folder.
+There is also a (zipped) pre-compiled binary (for Windows) available in the
+[cg/lib/](/cg/lib) folder.
 
 ## Ds Demo
 

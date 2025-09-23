@@ -95,6 +95,7 @@ target_include_directories(cg PUBLIC
 target_link_libraries(cg PUBLIC OpenGL::GL)
 
 if(USE_CUDA)
+  find_package(CUDA REQUIRED)
   # Preprocessor definition _USE_CUDA must be propagated
   target_compile_definitions(cg PUBLIC _USE_CUDA)
   target_link_libraries(cg PUBLIC CUDA::cudart CUDA::cuda_driver)

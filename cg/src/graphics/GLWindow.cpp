@@ -1,6 +1,6 @@
 //[]---------------------------------------------------------------[]
 //|                                                                 |
-//| Copyright (C) 2018, 2023 Paulo Pagliosa.                        |
+//| Copyright (C) 2018, 2025 Paulo Pagliosa.                        |
 //|                                                                 |
 //| This software is provided 'as-is', without any express or       |
 //| implied warranty. In no event will the authors be held liable   |
@@ -28,7 +28,7 @@
 // Source file for OpenGL window.
 //
 // Author: Paulo Pagliosa
-// Last revision: 05/09/2023
+// Last revision: 22/09/2025
 
 #include "core/Exception.h"
 #include "graphics/Application.h"
@@ -163,12 +163,15 @@ GLWindow::centerWindow()
   if (monitor == nullptr)
     monitor = glfwGetPrimaryMonitor();
   glfwGetWindowSize(_window, &_width, &_height);
+  // Wayland does not support glfwSetWindowPos()
+  if (glfwGetPlatform() != GLFW_PLATFORM_WAYLAND)
+  {
+    const auto v = glfwGetVideoMode(monitor);
+    const auto x = (v->width - _width) >> 1;
+    const auto y = (v->height - _height) >> 1;
 
-  const auto v = glfwGetVideoMode(monitor);
-  const auto x = (v->width - _width) >> 1;
-  const auto y = (v->height - _height) >> 1;
-
-  glfwSetWindowPos(_window, x, y);
+    glfwSetWindowPos(_window, x, y);
+  }
 }
 
 inline void
