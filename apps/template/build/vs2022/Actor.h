@@ -25,6 +25,11 @@ namespace cg {
             _normal = mat3f{ transform };
         }
 
+        void setMaterial(const Material& material)
+        {
+            _material = &material;
+        }
+
         Shape3* shape() const { return _shape; }
 
         Material* material() const { return _material; }

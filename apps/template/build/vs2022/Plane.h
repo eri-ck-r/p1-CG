@@ -6,20 +6,25 @@
 class Plane : public Shape3
 {
 private:
-    vec3f p;
-    vec3f N;
+    vec3f _p;
+    vec3f _N;
 
 public:
+    Plane(vec3f p, vec3f N) : _p{ p }, _N{ N }
+    {
+        // do nothing
+    }
+
     bool intersect(const ray3f& ray, float& t) const override
     {
-        t = -((ray.origin - p).dot(N)) / (ray.direction.dot(N));
+        t = -((ray.origin - _p).dot(_N)) / (ray.direction.dot(_N));
 
         return t > 0;
     }
 
     vec3f normalAt(const vec3f& p) const override
     {
-        return N;
+        return _N;
     }
 };
 

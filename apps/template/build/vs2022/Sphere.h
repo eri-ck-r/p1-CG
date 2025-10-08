@@ -9,11 +9,19 @@ private:
 	vec3f _center;
 	float _radius;
 public:
+	Sphere(vec3f center, float radius) :
+		_center(center), _radius(radius)
+	{
+		// do nothing
+	}
+
 	bool intersect(const ray3f& ray, float& t) const override
 	{
+		vec3f oc = _center - ray.origin;
 		float a = ray.direction.dot(ray.direction);
-		float b = 2 * ray.direction.dot(ray.origin);
-		float c = ray.origin.dot(ray.origin) - _radius * _radius;
+		float b = -2.0f * ray.direction.dot(oc);
+		float c = oc.dot(oc) - _radius * _radius;
+
 		// delta = b^2-4ac
 		float delta = b * b - 4 * a * c;
 		if (delta < 0)
@@ -21,7 +29,7 @@ public:
 
 		float t1 = (-1 * b + sqrt(delta)) / 2 * a;
 		float t2 = (-1 * b - sqrt(delta)) / 2 * a;
-		t = cg::math::max(t1, t2);
+		t = cg::math::min(t1, t2);
 		return true;
 	}
 
