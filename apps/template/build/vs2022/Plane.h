@@ -10,14 +10,14 @@ private:
     vec3f _N;
 
 public:
-    Plane(vec3f p, vec3f N) : _p{ p }, _N{ N }
+    Plane(vec3f p, vec3f N) : _p{ p }, _N{ N.versor()}
     {
         // do nothing
     }
 
     bool intersect(const ray3f& ray, float& t) const override
     {
-        t = -((ray.origin - _p).dot(_N)) / (ray.direction.dot(_N));
+        t = (_p - ray.origin).dot(_N) / (ray.direction.versor().dot(_N));
 
         return t > 0;
     }
