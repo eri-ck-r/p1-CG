@@ -14,22 +14,33 @@ public:
 	{
 		// do nothing
 	}
-
 	
 	bool intersect(const ray3f& ray, float& t) const override
 	{
 		float a = ray.direction.dot(ray.direction);
-		float b = -2.0f * ray.direction.dot(_center - ray.origin);
-		float c = (_center - ray.origin).dot(_center - ray.origin) - _radius * _radius;
+		float b = 2.0f * ray.direction.dot(ray.origin - _center);
+		float c = (ray.origin - _center).dot(ray.origin - _center) - _radius * _radius;
 
-		float delta = b * b - (4*a * c);
+		float delta = b * b - (4 * a * c);
 		if (cg::math::isNegative(delta))
 			return false;
 
-		float t1 = (-1 * b + sqrt(delta)) / a;
-		float t2 = (-1 * b - sqrt(delta)) / a;
-		t = cg::math::min(t1, t2);
-		return true;
+		float t1 = (-1 * b + sqrt(delta)) / 2.0f * a;
+		float t2 = (-1 * b - sqrt(delta)) / 2.0f * a;
+
+		if (t1 > 1e-6)
+		{
+			t = t1;
+			return true;
+		}
+
+		if (t2 > 1e-6)
+		{
+			t = t2;
+			return true;
+		}
+
+		return false;
 	}
 	
 
