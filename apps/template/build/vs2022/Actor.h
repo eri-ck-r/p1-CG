@@ -34,6 +34,7 @@ namespace cg {
 
         Material* material() const { return _material; }
 
+        mat4f& transform() { return _transform; };
     };
 
 };

@@ -140,7 +140,7 @@ public:
     r = float(v.x);
     g = float(v.y);
     b = float(v.z);
-    a = float(v.w);
+    //a = float(v.w);
   }
 
   template <typename V>

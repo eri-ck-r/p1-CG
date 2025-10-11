@@ -44,8 +44,8 @@
 
 struct Settings
 {
-    int m = 1024;
-    int n = 768;
+    int m = 800;
+    int n = 600;
     int W = m;
     int H = n;
 };
@@ -89,15 +89,19 @@ main(int argc, char** argv)
     Reference<Material> newMaterial = Material::makeUse(new Material(Color{ 1.0f,0.0f,0.0f }));
     Reference<Material> blueMaterial = Material::makeUse(new Material(Color{ 0.0f,0.0f,1.0f }));
 
-    Reference<Sphere> sphere = Sphere::makeUse(new Sphere({ 0.0f, 0.0f, 0.0f }, 8.0f));
+    Reference<Sphere> sphere1 = Sphere::makeUse(new Sphere({ 0.0f, 8.0f, 0.0f }, 8.0f));
+    Reference<Sphere> sphere2 = Sphere::makeUse(new Sphere({ 0.0f, -50.0f, 0.0f }, 50.0f));
 
     Reference<Plane> plane = Plane::makeUse(new Plane({ 0,0,0 }, { 0, 1, 0 }));
     Reference<Plane> plane2 = Plane::makeUse(new Plane{ {-2, 0, 0}, {1, 0, 0} });
     Reference<Plane> plane3 = Plane::makeUse(new Plane{ {0, 0, -2}, {0, 0, 1} });
 
-    Reference<Actor> sphereActor = Actor::makeUse(new Actor{ *sphere });
-    sphereActor->setTransform(mat4f::identity());
-    sphereActor->setMaterial(*blueMaterial);
+    Reference<Actor> sphereActor1 = Actor::makeUse(new Actor{ *sphere1 });
+    Reference<Actor> sphereActor2 = Actor::makeUse(new Actor{ *sphere2 });
+    sphereActor1->setTransform(mat4f::identity());
+    sphereActor1->setMaterial(*blueMaterial);
+    sphereActor2->transform().setTRS(vec3f{ 0.0f, -50.0f, 0.0f }, mat4f::quat::identity(), vec3f{ 1.0f, 1.0f, 1.0f });
+    sphereActor2->setMaterial(*newMaterial);
 
     Reference<Actor> planeActor = Actor::makeUse(new Actor{ *plane });
     planeActor->setTransform(mat4f::identity());
@@ -113,17 +117,36 @@ main(int argc, char** argv)
     scene->backgroundColor = Color{ 0.678f, 0.848f, 0.90f };
     scene->ambientLight = Color{ 0.412f, 0.412f, 0.412f };
 
-    scene->actors.add(sphereActor);
-    scene->actors.add(planeActor);
+    scene->actors.add(sphereActor1);
+    scene->actors.add(sphereActor2);
+    //scene->actors.add(planeActor);
     // scene->actors.add(planeActor2);
+    Reference<Light> light1 = Light::makeUse(new Light());
+    Reference<Light> light2 = Light::makeUse(new Light());
+
+    light1->setType(Light::Type::Point);
+    light2->setType(Light::Type::Point);
+
+    light1->color = Color{ 0.929f, 0.196f, 0.918 }; // rosa
+    light2->color = Color{ 0.0f, 1.0f, 0.816f }; // azulzin
+
+    light1->setPosition(vec3f{ 0.0f, 10.0f, 0.0f });
+    light2->setPosition(vec3f{ -10.0f, 9.0f, 10.0f });
+    
+    light1->falloff = light2->falloff = Light::Falloff::Linear;
+
+    
+    //scene->lights.add(light1);
+    //scene->lights.add(light2);
+    
 
     camera->setDefaultView();
-    camera->setPosition({ 0, 1, 10 });
-    // camera->setDirectionOfProjection((vec3f{ 0,0,0 } - camera->position()).versor());
+    //camera->translate({ 0, 1, 10});
+    //camera->setViewUp({ 0.0f , 1.0f, 0.0f });
+     camera->setDirectionOfProjection((vec3f{ 0,0,0 } - camera->position()).versor());
     // camera->pitch(30);
     camera->print();
     // GLImage image{ settings.m, settings.n };
-
     const auto& m = camera->cameraToWorldMatrix();
 
     vec3f camU, camV, camN;
@@ -148,7 +171,7 @@ main(int argc, char** argv)
 
     for (int j = 0; j < settings.n; ++j)
     {
-        // std::clog << "\rScanlines remaining: " << (settings.n - j) << ' ' << std::flush;
+        //std::clog << "\rScanlines remaining: " << (settings.n - j) << ' ' << std::flush;
         for (int i = 0; i < settings.m; i++)
         {
             //determinar o Xp e o Yp
@@ -160,40 +183,53 @@ main(int argc, char** argv)
             ray.direction = p;
 
             float minDistance = std::numeric_limits<float>::max();
+            bool flag = false;
             Color c = scene->backgroundColor;
 
             if (ray.direction.equals({ 0, 0, -1 }, 1e-2))
             {
                 vec3f zero{};
-            }
+            } // ?
 
             for (auto actor : scene->actors)
             {
                 float t = std::numeric_limits<float>::max();
                 if (actor->shape()->intersect(ray, t))
                 {
-                    for (auto light : scene->lights)
-                    {
-
-                    }
+                    flag = true;
                     if (t < minDistance)
                     {
                         minDistance = t;
-                        c = actor->material()->diffuse;
+                        //c = actor->material()->diffuse;
+                        c = Color(actor->shape()->normalAt(ray(minDistance)));
+                        vec3f interPoint = ray(minDistance);
+                        for (auto light : scene->lights)
+                        {
+                            ray3f shadowRay{ interPoint, vec3f(light->position() - interPoint).versor() };
+                            for (auto shadowActor : scene->actors)
+                            {
+                                if (shadowActor->shape()->intersect(shadowRay, Zp) && shadowActor != actor)
+                                {
+                                    c = shadowActor->material()->ambient;
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
+            }
+            if (flag)
+            {
             }
             //printar cor
             // writeColor(std::cout, c);
             writeColor(of, c);
         }
         std::clog.precision(5);
-        std::clog << "\nd: " << ray.direction.x << " " << ray.direction.y << " " << ray.direction.z;
+        //std::clog << "\nd: " << ray.direction.x << " " << ray.direction.y << " " << ray.direction.z;
     }
 
     of.close();
-
-    std::cin.get();
 
     return 1;
 }
