@@ -17,9 +17,13 @@ public:
 	
 	bool intersect(const ray3f& ray, float& t) const override
 	{
-		float a = ray.direction.dot(ray.direction);
-		float b = 2.0f * ray.direction.dot(ray.origin - _center);
-		float c = (ray.origin - _center).dot(ray.origin - _center) - _radius * _radius;
+		vec3f newPoint = worldToLocalMatrix().transform(ray.origin);
+		vec3f newDirection = worldToLocalMatrix().transformVector(ray.direction);
+		ray3f newRay{ newPoint, newDirection.versor() };
+
+		float a = newRay.direction.dot(newRay.direction);
+		float b = 2.0f * newRay.direction.dot(newRay.origin - _center);
+		float c = (newRay.origin - _center).dot(newRay.origin - _center) - _radius * _radius;
 
 		float delta = b * b - (4 * a * c);
 		if (cg::math::isNegative(delta))
@@ -30,20 +34,19 @@ public:
 		float tmin = std::numeric_limits<float>::max();
 
 		if (!cg::math::isNegative(t1))
-		{
 			tmin = cg::math::min(t1, tmin);
-			if (!cg::math::isNegative(t2))
-				tmin = cg::math::min(t2, tmin);
-			t = tmin;
-			return true;
-		}
+		if (!cg::math::isNegative(t2))
+			tmin = cg::math::min(t2, tmin);
 
-		return false;
+		t = tmin / newDirection.length();
+		return tmin != std::numeric_limits<float>::max();
+
 	}
 
 	vec3f normalAt(const vec3f& p) const override
 	{
-			return (p - _center) * (1.0f / _radius);
+		vec3f newPoint = worldToLocalMatrix().transform(p);
+		return localToWorldMatrix().transformVector((newPoint - _center) * (1.0f / _radius)).versor();
 	}
 };
 #endif // !__Sphere_h
