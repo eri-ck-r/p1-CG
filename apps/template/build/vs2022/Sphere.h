@@ -33,9 +33,9 @@ public:
 		float t2 = (-1 * b - sqrt(delta)) / 2.0f * a;
 		float tmin = std::numeric_limits<float>::max();
 
-		if (!cg::math::isNegative(t1))
+		if (cg::math::isPositive(t1))
 			tmin = cg::math::min(t1, tmin);
-		if (!cg::math::isNegative(t2))
+		if (cg::math::isPositive(t2))
 			tmin = cg::math::min(t2, tmin);
 
 		t = tmin / newDirection.length();

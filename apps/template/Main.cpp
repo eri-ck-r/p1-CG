@@ -46,10 +46,15 @@ using namespace cg;
 
 struct Settings
 {
-	int m = 800;
-	int n = 600;
-	int W = m;
-	int H = n;
+	int m{};
+	int n{};
+	int W{};
+	int H{};
+	Settings(int m, float aspect):
+		m(m), n(int(m/aspect)), W(m), H(n)
+	{
+		//do nothing
+	}
 };
 
 inline static
@@ -58,7 +63,7 @@ void writeHeader(std::ostream& out, Settings& settings)
 	out << "P3\n" << settings.m << ' ' << settings.n << "\n255\n";
 }
 
-inline static 
+inline static
 void writeColor(std::ostream& out, const cg::Color& c)
 {
 	int iR = (int)(255.999 * c.x);
@@ -78,22 +83,22 @@ void writeColor(std::ostream& out, const cg::Color& c)
 inline static
 Reference<Sphere> createSphere(const vec3f& center, const float& radius, const vec3f& scale = { 1.0f, 1.0f, 1.0f })
 {
-	Reference<Sphere> sphere = Sphere::makeUse(new Sphere({ {0.0f, 0.0f, 0.0f}, 1.0f}));
-	sphere->setTransform(center, quatf::identity(), radius*scale);
+	Reference<Sphere> sphere = Sphere::makeUse(new Sphere({ {0.0f, 0.0f, 0.0f}, 1.0f }));
+	sphere->setTransform(center, quatf::identity(), radius * scale);
 	return sphere;
 }
 
 /**
 *  @brief Creates a Plane.
-* 
+*
 *  @param P -- Point which the plane passes through
 *  @param normal -- Plane normal
 *  @param scale -- Vec2f scale, only in vertical and horizontal (x and y)
 */
 inline static
-Reference<Plane> createPlane(const vec3f& P, const vec3f& normal, const vec2f& scale = {1.0f, 1.0f})
+Reference<Plane> createPlane(const vec3f& P, const vec3f& normal, const vec2f& scale = { 1.0f, 1.0f })
 {
-	Reference<Plane> plane = Plane::makeUse(new Plane( P, {0.0f, 1.0f, 0.0f }));
+	Reference<Plane> plane = Plane::makeUse(new Plane(P, { 0.0f, 1.0f, 0.0f }));
 	vec3f scale3 = { scale.x, 1, scale.y };
 	quatf rotationQuat(vec3f{ 0.0f, 1.0f, 0.0f }.dot(normal.versor()), normal);
 	plane->setTransform(P, rotationQuat, scale3);
@@ -102,12 +107,12 @@ Reference<Plane> createPlane(const vec3f& P, const vec3f& normal, const vec2f& s
 
 /**
 * @brief Creates and insert an actor into the scene
-* 
+*
 * @param scene -- Scene to add the actor
 * @param Material -- Actor's material
 */
 inline static
-void 
+void
 createActor(Scene* scene, Shape3* shape, Material* material)
 {
 	Reference<Actor> actor = Actor::makeUse(new Actor(*shape));
@@ -116,13 +121,14 @@ createActor(Scene* scene, Shape3* shape, Material* material)
 }
 
 /*
-* @brief Creates 3 "lines for the x, y and z axis
-* 
+* @brief Creates 3 lines for the x, y and z axis
+*
 * @param scene -- Scene to add the axes
 * @param material1, 2 and 3 -- materials for x, y and z respectively
+* @param material4 -- material for axis mapping
 */
 inline static
-void createAxis(Scene* scene, Material* material1, Material* material2, Material* material3)
+void createAxis(Scene* scene, Material* material1, Material* material2, Material* material3, Material* material4)
 {
 	auto xAxis = createSphere(vec3f::null(), 1.0f, { 1000.0f, 0.1f, 0.1f });
 	auto yAxis = createSphere(vec3f::null(), 1.0f, { 0.1f, 1000.0f, 0.1f });
@@ -131,18 +137,36 @@ void createAxis(Scene* scene, Material* material1, Material* material2, Material
 	createActor(scene, xAxis, material1);
 	createActor(scene, yAxis, material2);
 	createActor(scene, zAxis, material3);
+
+	for (int i = 0; i < 20; i++)
+	{
+		auto axisSphere = createSphere({ (float)i, 0.0f, 0.0f }, 0.12f, { 1.0f, 3.0f, 1.0f });
+		createActor(scene, axisSphere, material4);
+	}
+
+	for (int i = 0; i < 20; i++)
+	{
+		auto axisSphere = createSphere({ 0.0f, (float)i, 0.0f }, 0.12f, { 3.0f, 1.0f, 1.0f });
+		createActor(scene, axisSphere, material4);
+	}
+
+	for (int i = 0; i < 20; i++)
+	{
+		auto axisSphere = createSphere({ 0.0f, 0.0f, (float)i }, 0.12f, { 1.0f, 3.0f, 1.0f });
+		createActor(scene, axisSphere, material4);
+	}
 }
 
 /**
 * @brief Creates a material
-* 
+*
 * @param r -- Red channel
 * @param g -- Green channel
 * @param b -- Blue channel
 * @param alpha -- Optional, opacity value
 */
 inline static
-Reference<Material> createMaterial(const float& r,const float& g, const float& b, const float& alpha = 1)
+Reference<Material> createMaterial(const float& r, const float& g, const float& b, const float& alpha = 1)
 {
 	return Material::makeUse(new Material(Color{ r, g, b, alpha }));
 }
@@ -151,7 +175,7 @@ Reference<Material> createMaterial(const float& r,const float& g, const float& b
 
 /**
 * @brief Creates a light and adds it to the scene
-* 
+*
 * @param scene -- The scene to which add the light
 * @param position -- Vec3f Light position
 * @param color -- Light's Color
@@ -163,7 +187,7 @@ void createLight(Scene* scene, const vec3f& position, const Color& color)
 	light->setPosition(position);
 	light->color = color;
 	light->setType(Light::Type::Point);
-	light->falloff = Light::Falloff::Linear;
+	light->falloff = Light::Falloff::Constant;
 	scene->lights.add(light);
 }
 
@@ -195,7 +219,7 @@ main(int argc, char** argv)
 
 	Reference<Scene> scene = Scene::makeUse(new Scene());
 	Reference<Camera> camera = Camera::makeUse(new Camera());
-	Settings settings;
+	Settings settings(800, 4/3);
 
 	auto redMaterial = createMaterial(1.0f, 0.0f, 0.0f);
 	auto greenMaterial = createMaterial(0.0f, 1.0f, 0.0f);
@@ -203,14 +227,17 @@ main(int argc, char** argv)
 	auto pinkMaterial = createMaterial(0.788f, 0.2f, 0.753f);
 	auto yellowMaterial = createMaterial(1.0f, 1.0f, 0.0f);
 	auto purpleMaterial = createMaterial(0.435f, 0.0f, 1.0f);
+	auto greyMaterial = createMaterial(0.5f, 0.5f, 0.5f);
 
-	auto sphere1 = createSphere( {0.0f, 2.0f, 0.0f }, 2.0f);
+	auto sphere1 = createSphere({ 0.0f, 2.0f, 0.0f }, 2.0f);
 	auto sphere2 = createSphere({ 0.0f, -100.0f, 0.0f }, 100.0f);
 	auto sphere3 = createSphere({ 4.0f, 4.0f, 0.0f }, 2.0f);
-	createAxis(scene, yellowMaterial, purpleMaterial, greenMaterial);
-	//auto plane1 = createPlane({ 0.0f, -2.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
-	//auto plane2 = createPlane({ -3.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f });
-	//auto plane3 = createPlane({ 3.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
+
+	createAxis(scene, yellowMaterial, purpleMaterial, greenMaterial, greyMaterial);
+
+	auto plane1 = createPlane({ 0.0f, -2.5f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+	auto plane2 = createPlane({ -3.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f });
+	auto plane3 = createPlane({ 3.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
 
 	//createActor(scene, plane1, redMaterial);
 	//createActor(scene, plane2, greenMaterial);
@@ -223,17 +250,17 @@ main(int argc, char** argv)
 	scene->backgroundColor = Color{ 0.678f, 0.848f, 0.90f };
 	scene->ambientLight = Color{ 0.412f, 0.412f, 0.412f };
 
-	createLight(scene, { 1.0f, 10.0f, 1.0f }, Color{ 1.0f, 1.0f, 1.0f }); // branca 
-	//createLight(scene, { -10.0f, 9.0f, 10.0f }, Color{ 0.0f, 1.0f, 0.816f }); // azul
+	createLight(scene, { 4.0f, 2.0f, 3.0f }, Color{ 1.0f, 1.0f, 1.0f }); // branca 
+	//createLight(scene, { -10.0f, 9.0f, -10.0f }, Color{ 0.0f, 1.0f, 0.816f }); // azul
 
 
-	camera->setDefaultView();
-	camera->setDirectionOfProjection((vec3f{ 0,0,1 } - camera->position()).versor());
-	camera->setPosition({0.0f, 1.0f, 10.0f});
+	camera->setDefaultView(16.0f/9.0f);
+	camera->setPosition({ 6.0f, 3.0f, 9.0f });
 	//camera->setViewUp({ 0.0f , 1.0f, 0.0f });
 	// camera->pitch(30);
 	camera->print();
 	// GLImage image{ settings.m, settings.n };
+	camera->setDirectionOfProjection((vec3f{ 0,0,1 } - camera->position()).versor());
 	const auto& m = camera->cameraToWorldMatrix();
 
 	vec3f camU, camV, camN;
@@ -258,7 +285,7 @@ main(int argc, char** argv)
 
 	for (int j = 0; j < settings.n; ++j)
 	{
-		//std::clog << "\rScanlines remaining: " << (settings.n - j) << ' ' << std::flush;
+		std::clog << "\rScanlines remaining: " << (settings.n - j) << ' ' << std::flush;
 		for (int i = 0; i < settings.m; i++)
 		{
 			//determinar o Xp e o Yp
@@ -270,7 +297,6 @@ main(int argc, char** argv)
 			ray.direction = p;
 
 			float minDistance = std::numeric_limits<float>::max();
-			bool flag = false;
 			Color c = scene->backgroundColor;
 
 			if (ray.direction.equals({ 0, 0, -1 }, 1e-2))
@@ -283,29 +309,41 @@ main(int argc, char** argv)
 				float t = std::numeric_limits<float>::max();
 				if (actor->shape()->intersect(ray, t))
 				{
-					flag = true;
 					if (t < minDistance)
 					{
 						minDistance = t;
-						c = actor->material()->diffuse;
+						c = actor->material()->ambient;
+
+						// iluminaçao = Cd*Cl*(-N*Ll)
+						// onde Cd = cor do material difuso, Cl = cor da luz(tem que calcular o falloff, N = normal
+						// e Ll a direção do raio de luz ( é o lightray)
 						vec3f interPoint = ray(minDistance);
+						bool flag = false;
 						for (auto light : scene->lights)
 						{
-							ray3f shadowRay{ interPoint, vec3f(light->position() - interPoint).versor() };
+							vec3f lightDirection = light->position() - interPoint;
+							ray3f lightRay{ interPoint, lightDirection.versor() };
+							Color lightColor = light->lightColor(lightDirection.length());
 							for (auto shadowActor : scene->actors)
 							{
-								if (shadowActor->shape()->intersect(shadowRay, Zp) && shadowActor != actor)
+								float shadowInterPoint;
+								if (shadowActor->shape()->intersect(lightRay, shadowInterPoint) && shadowActor != actor
+									&& math::isNegative(shadowInterPoint - lightDirection.length()))
 								{
-									c = shadowActor->material()->ambient;
+									flag = true;
 									break;
 								}
+							}
+							if (flag == false)
+							{
+								vec3f shapeNormal = actor->shape()->normalAt(interPoint);
+								c += actor->material()->diffuse * lightColor * (shapeNormal.dot(lightRay.direction));
+								vec3f reflectionDirection = ((-lightDirection).versor() - 2.0f * (shapeNormal.dot((-lightDirection).versor()) * shapeNormal)).versor();
+								c += actor->material()->specular * lightColor *  pow(-(reflectionDirection.dot(ray.direction)), 64);
 							}
 						}
 					}
 				}
-			}
-			if (flag)
-			{
 			}
 			//printar cor
 			// writeColor(std::cout, c);

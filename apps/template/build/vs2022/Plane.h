@@ -18,16 +18,16 @@ public:
     bool intersect(const ray3f& ray, float& t) const override
     {
         vec3f newOrigin = worldToLocalMatrix().transform(ray.origin);
-        vec3f newDirection = worldToLocalMatrix().transform(ray.direction).versor();
+        vec3f newDirection = worldToLocalMatrix().transformVector(ray.direction);
         ray3f newRay{ newOrigin, newDirection };
-        t = (_p - newRay.origin).dot(_N) / (newRay.direction.dot(_N)); //todo simplifiacr isso aqui pq o plano tem origem no 0 0 0 e normal 0 1 0 entao fica -newOrigin.y/newDirection.y
-
-        return t > 0;
+        float tLocal = (_p - newRay.origin).dot(_N) / (newRay.direction.versor().dot(_N)); //todo simplifiacr isso aqui pq o plano tem origem no 0 0 0 e normal 0 1 0 entao fica -newOrigin.y/newDirection.y
+        t = tLocal / newDirection.length();
+        return cg::math::isPositive(t);
     }
 
     vec3f normalAt(const vec3f& p) const override
     {
-        return localToWorldMatrix().transformVector(_N);
+        return localToWorldMatrix().transformVector(_N).versor();
     }
 };
 
