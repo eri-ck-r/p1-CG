@@ -99,8 +99,9 @@ inline static
 Reference<Plane> createPlane(const vec3f& P, const vec3f& normal, const vec2f& scale = { 1.0f, 1.0f })
 {
 	Reference<Plane> plane = Plane::makeUse(new Plane(P, { 0.0f, 1.0f, 0.0f }));
-	vec3f scale3 = { scale.x, 1, scale.y };
-	quatf rotationQuat(vec3f{ 0.0f, 1.0f, 0.0f }.dot(normal.versor()), normal);
+	vec3f scale3 = { scale.x, 1.0f, scale.y };
+	vec3f newAxis = vec3f{ 0.0f, 1.0f, 0.0f }.cross(normal).versor();
+	quatf rotationQuat(cg::math::toDegrees(acos(newAxis.dot(normal))), newAxis);
 	plane->setTransform(P, rotationQuat, scale3);
 	return plane;
 }
@@ -138,7 +139,7 @@ void createAxis(Scene* scene, Material* material1, Material* material2, Material
 	createActor(scene, yAxis, material2);
 	createActor(scene, zAxis, material3);
 
-	for (int i = 0; i < 20; i++)
+	/*for (int i = 0; i < 20; i++)
 	{
 		auto axisSphere = createSphere({ (float)i, 0.0f, 0.0f }, 0.12f, { 1.0f, 3.0f, 1.0f });
 		createActor(scene, axisSphere, material4);
@@ -154,7 +155,7 @@ void createAxis(Scene* scene, Material* material1, Material* material2, Material
 	{
 		auto axisSphere = createSphere({ 0.0f, 0.0f, (float)i }, 0.12f, { 1.0f, 3.0f, 1.0f });
 		createActor(scene, axisSphere, material4);
-	}
+	}*/
 }
 
 /**
@@ -219,7 +220,8 @@ main(int argc, char** argv)
 
 	Reference<Scene> scene = Scene::makeUse(new Scene());
 	Reference<Camera> camera = Camera::makeUse(new Camera());
-	Settings settings(800, 4/3);
+	Settings settings(800, 16.0f/9.0f);
+
 
 	auto redMaterial = createMaterial(1.0f, 0.0f, 0.0f);
 	auto greenMaterial = createMaterial(0.0f, 1.0f, 0.0f);
@@ -235,11 +237,11 @@ main(int argc, char** argv)
 
 	createAxis(scene, yellowMaterial, purpleMaterial, greenMaterial, greyMaterial);
 
-	auto plane1 = createPlane({ 0.0f, -2.5f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+	auto plane1 = createPlane({ 0.0f, 5.0f, 0.0f }, { 0.0f, 1.0f, 0.0f });
 	auto plane2 = createPlane({ -3.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f });
 	auto plane3 = createPlane({ 3.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
 
-	//createActor(scene, plane1, redMaterial);
+	createActor(scene, plane1, redMaterial);
 	//createActor(scene, plane2, greenMaterial);
 	//createActor(scene, plane3, blueMaterial);
 
@@ -255,11 +257,11 @@ main(int argc, char** argv)
 
 
 	camera->setDefaultView(16.0f/9.0f);
-	camera->setPosition({ 6.0f, 3.0f, 9.0f });
+	camera->setPosition({ 5.0f, 3.0f, 20.0f });
+
 	//camera->setViewUp({ 0.0f , 1.0f, 0.0f });
-	// camera->pitch(30);
-	camera->print();
-	// GLImage image{ settings.m, settings.n };
+	//camera->pitch(30);
+	//GLImage image{ settings.m, settings.n };
 	camera->setDirectionOfProjection((vec3f{ 0,0,1 } - camera->position()).versor());
 	const auto& m = camera->cameraToWorldMatrix();
 
@@ -268,9 +270,17 @@ main(int argc, char** argv)
 	camV = m[1];
 	camN = m[2];
 
+
 	writeHeader(of, settings);
 
 	ray3f ray;
+
+	camera->setClippingPlanes(1000.0f, 300.0f);
+	settings.H = camera->windowHeight();
+	settings.W = settings.H * (16.0f / 9.0f);
+
+	camera->print();
+	
 
 	/*
 	float F, B;
@@ -291,7 +301,7 @@ main(int argc, char** argv)
 			//determinar o Xp e o Yp
 			float Xp = (((settings.W * (i + 0.5f)) / (float)settings.m)) - (settings.W / 2.0f);
 			float Yp = (settings.H / 2.0f) - ((settings.H / (float)settings.n) * (j + 0.5f));
-			float Zp = camera->nearPlane() + 300.0f;
+			float Zp = camera->nearPlane();
 
 			vec3f p = (Xp * camU + Yp * camV - Zp * camN).versor();
 			ray.direction = p;
@@ -299,14 +309,10 @@ main(int argc, char** argv)
 			float minDistance = std::numeric_limits<float>::max();
 			Color c = scene->backgroundColor;
 
-			if (ray.direction.equals({ 0, 0, -1 }, 1e-2))
-			{
-				vec3f zero{};
-			} // ?
-
 			for (auto actor : scene->actors)
 			{
 				float t = std::numeric_limits<float>::max();
+
 				if (actor->shape()->intersect(ray, t))
 				{
 					if (t < minDistance)
@@ -324,6 +330,7 @@ main(int argc, char** argv)
 							vec3f lightDirection = light->position() - interPoint;
 							ray3f lightRay{ interPoint, lightDirection.versor() };
 							Color lightColor = light->lightColor(lightDirection.length());
+
 							for (auto shadowActor : scene->actors)
 							{
 								float shadowInterPoint;
@@ -334,6 +341,7 @@ main(int argc, char** argv)
 									break;
 								}
 							}
+
 							if (flag == false)
 							{
 								vec3f shapeNormal = actor->shape()->normalAt(interPoint);

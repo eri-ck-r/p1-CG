@@ -21,8 +21,9 @@ public:
         vec3f newDirection = worldToLocalMatrix().transformVector(ray.direction);
         ray3f newRay{ newOrigin, newDirection };
         float tLocal = (_p - newRay.origin).dot(_N) / (newRay.direction.versor().dot(_N)); //todo simplifiacr isso aqui pq o plano tem origem no 0 0 0 e normal 0 1 0 entao fica -newOrigin.y/newDirection.y
+        vec3f interPoint = newRay(tLocal);
         t = tLocal / newDirection.length();
-        return cg::math::isPositive(t);
+        return cg::math::abs(interPoint.x) <= 1.0f && cg::math::abs(interPoint.z) <= 1.0f && cg::math::isPositive(t);
     }
 
     vec3f normalAt(const vec3f& p) const override
