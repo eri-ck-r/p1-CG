@@ -18,6 +18,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\MainWindow.h" />
     <ClInclude Include="Actor.h" />
+    <ClInclude Include="Bitmap.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="Raycaster.h" />
     <ClInclude Include="Scene.h" />
