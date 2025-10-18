@@ -136,18 +136,15 @@ Color Raycaster::shoot(ray3f& pixelRay)
 	for (auto actor : _scene->actors)
 	{
 		float t = std::numeric_limits<float>::max();
-
 		if (actor->shape()->intersect(pixelRay, t))
 		{
 			if (t < minDistance)
 			{
 				minDistance = t;
-				c = actor->material()->ambient;
 
-				// iluminaçao = Cd*Cl*(-N*Ll)
-				// onde Cd = cor do material difuso, Cl = cor da luz(tem que calcular o falloff, N = normal
-				// e Ll a direção do raio de luz ( é o lightray)
+				c = actor->material()->ambient;
 				vec3f interPoint = pixelRay(minDistance);
+
 				bool flag = false;
 				for (auto light : _scene->lights)
 				{
@@ -169,9 +166,10 @@ Color Raycaster::shoot(ray3f& pixelRay)
 					if (flag == false)
 					{
 						vec3f shapeNormal = actor->shape()->normalAt(interPoint);
-						// I =  Od * Il * (N*Ll)
+						// I =  Od * Il * (N*Ll) -- Equação 4.7
 						c += actor->material()->diffuse * lightColor * (shapeNormal.dot(lightRay.direction));
 						vec3f reflectionDirection = ((-lightDirection).versor() - 2.0f * (shapeNormal.dot((-lightDirection).versor()) * shapeNormal)).versor();
+						// I = Os * Ll * (-Rl*V) -- Equação 4.9
 						c += actor->material()->spot * lightColor * pow(-(reflectionDirection.dot(pixelRay.direction)), 64);
 					}
 				}
