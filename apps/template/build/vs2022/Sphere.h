@@ -39,7 +39,7 @@ public:
 			tmin = cg::math::min(t2, tmin);
 
 		t = tmin / newDirection.length();
-		return ( (tmin != std::numeric_limits<float>::max()) && t > 1.0f );
+		return ( (tmin != std::numeric_limits<float>::max()));
 
 	}
 

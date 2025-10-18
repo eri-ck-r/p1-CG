@@ -21,8 +21,6 @@ class Raycaster
 private:
 	Reference<Scene> _scene;
 	Reference<Camera> _camera;
-	Bitmap _bmp;
-	const char* _imageName;
 	int _m;
 	int _n;
 	float _W;
@@ -54,11 +52,11 @@ private:
 	Pixel colorToPixel(Color c);
 
 public:
-	Raycaster(int width, float aspectRatio, const char* imageName) :
+	Raycaster(int width, float aspectRatio, std::ostream& out) :
 		_m(width), _n((int)(width / aspectRatio)),
 		_scene(Scene::makeUse(Scene::makeUse(new Scene()))),
 		_camera(Camera::makeUse(new Camera(aspectRatio))),
-		_imageName(imageName)
+		_out(&out)
 	{
 		_camera->setDefaultView(aspectRatio);
 		_camera->setDirectionOfProjection(vec3f::null() - _camera->position());
@@ -69,13 +67,11 @@ public:
 
 		_H = _camera->windowHeight();
 		_W = _H * aspectRatio;
-		_bmp = Bitmap(_m, _n);
 	}
 
-	void writeHeader(std::ostream& out)
+	void writeHeader()
 	{
-		out << "P3\n" << _m << ' ' << _n << "\n255\n";
-		_out = &out;
+		*_out << "P3\n" << _m << ' ' << _n << "\n255\n";
 	}
 
 	void writeColor(const cg::Color& c)
@@ -91,7 +87,7 @@ public:
 
 	auto& camera() { return _camera; }
 
-	void createAxis(bool);
+	void createAxis(Material*, Material*, Material*, Material*, bool);
 
 	void createLight(const vec3f& position, const Color& color);
 

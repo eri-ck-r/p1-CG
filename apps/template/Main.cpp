@@ -73,8 +73,8 @@ main(int argc, char** argv)
 {
 	std::ofstream out{"imagem.ppm"};
 
-	Raycaster raycaster(1024, 16.0f/9.0f, "imagem.bmp");
-	raycaster.writeHeader(out);
+	Raycaster rc(1024, 16.0f/9.0f, out);
+	rc.writeHeader();
 
 	auto redMaterial = createMaterial(1.0f, 0.0f, 0.0f);
 	auto greenMaterial = createMaterial(0.0f, 1.0f, 0.0f);
@@ -84,17 +84,18 @@ main(int argc, char** argv)
 	auto purpleMaterial = createMaterial(0.435f, 0.0f, 1.0f);
 	auto greyMaterial = createMaterial(0.5f, 0.5f, 0.5f);
 
-	raycaster.createSphereActor({ 0.0f, 2.0f, 0.0f }, 2.0f, blueMaterial, {1.0f, 1.0f, 1.0f});
-	raycaster.createSphereActor({ 0.0f, -100.0f, 0.0f }, 100.0f, pinkMaterial, {1.0f, 1.0f, 1.0f});
-	raycaster.createSphereActor({ 4.0f, 4.0f, 0.0f }, 2.0f, redMaterial, { 1.0f, 1.0f, 1.0f});
+	rc.createSphereActor({ 0.1f, 2.3f, 0.1f }, 2.0f, blueMaterial, {1.0f, 1.0f, 1.0f});
+	rc.createSphereActor({ 0.0f, -100.0f, 0.0f }, 100.0f, pinkMaterial, {1.0f, 1.0f, 1.0f});
+	//rc.createPlaneActor({ 0.0f, -1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, pinkMaterial, { 100.0f, 100.0f });
+	rc.createSphereActor({ 4.0f, 4.0f, 0.0f }, 2.0f, redMaterial, { 1.0f, 1.0f, 1.0f});
 
-	raycaster.createPlaneActor({ 0.0f, 5.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, redMaterial, {1.0f, 1.0f});
+	//rc.createPlaneActor({ 0.0f, 5.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, redMaterial, {1.0f, 1.0f});
 
-	raycaster.createLight({ 4.0f, 2.0f, 3.0f }, Color{ 1.0f, 1.0f, 1.0f }); // branca
-
-	raycaster.camera()->setPosition({ 5.0f, 4.0f, 10.0f });
-	raycaster.camera()->setDirectionOfProjection(vec3f::null() - raycaster.camera()->position());
-	raycaster.render();
+	rc.createLight({ 4.0f, 8.0f, 3.0f }, Color{ 1.0f, 1.0f, 1.0f }); // branca
+	//rc.createAxis(redMaterial, blueMaterial, greenMaterial, greyMaterial, false);
+	rc.camera()->setPosition({ 5.0f, 4.0f, -10.0f });
+	rc.camera()->setDirectionOfProjection(vec3f::null() - rc.camera()->position());
+	rc.render();
 	out.close();
 
 	return 0;

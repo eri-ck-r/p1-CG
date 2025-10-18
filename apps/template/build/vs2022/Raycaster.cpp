@@ -45,35 +45,39 @@ inline
 Pixel Raycaster::colorToPixel(Color c)
 {
 
-	auto iR = (uint8_t)(255.999 * c.x);
-	auto iG = (uint8_t)(255.999 * c.y);
-	auto iB = (uint8_t)(255.999 * c.z);
+	auto iR = (uint8_t)(255 * c.x);
+	auto iG = (uint8_t)(255 * c.y);
+	auto iB = (uint8_t)(255 * c.z);
 
-	return Pixel{ iR, iG, iB };
+	return Pixel( iR, iG, iB );
 }
 
-void Raycaster::createAxis(bool flag = false)
+void Raycaster::createAxis(Material* material1,
+Material* material2,
+Material* material3,
+Material* material4,
+bool flag = false)
 {
 	auto xAxis = createSphere(vec3f::null(), 1.0f, { 1000.0f, 0.1f, 0.1f });
 	auto yAxis = createSphere(vec3f::null(), 1.0f, { 0.1f, 1000.0f, 0.1f });
 	auto zAxis = createSphere(vec3f::null(), 1.0f, { 0.1f, 0.1f, 1000.0f });
 
-	//createActor(xAxis, Raycaster::Materials::redMaterial);
-	//createActor(yAxis, yellowMaterial);
-	//createActor(zAxis, blueMaterial);
+	createActor(xAxis, material1);
+	createActor(yAxis, material2);
+	createActor(zAxis, material3);
 
-	//if (flag)
-	//{
-	//	for (int i = 0; i < 20; i++)
-	//	{
-	//		auto xSphere = createSphere({ (float)i, 0.0f, 0.0f }, 0.12f, { 1.0f, 3.0f, 1.0f });
-	//		createActor(xSphere, grayMaterial);
-	//		auto ySphere = createSphere({ 0.0f, (float)i, 0.0f }, 0.12f, { 3.0f, 1.0f, 1.0f });
-	//		createActor(ySphere, grayMaterial);
-	//		auto zSphere = createSphere({ 0.0f, 0.0f, (float)i }, 0.12f, { 1.0f, 3.0f, 1.0f });
-	//		createActor(zSphere, grayMaterial);
-	//	}
-	//}
+	if (flag)
+	{
+		for (int i = 0; i < 20; i++)
+		{
+			auto xSphere = createSphere({ (float)i, 0.0f, 0.0f }, 0.12f, { 1.0f, 3.0f, 1.0f });
+			createActor(xSphere, material4);
+			auto ySphere = createSphere({ 0.0f, (float)i, 0.0f }, 0.12f, { 3.0f, 1.0f, 1.0f });
+			createActor(ySphere, material4);
+			auto zSphere = createSphere({ 0.0f, 0.0f, (float)i }, 0.12f, { 1.0f, 3.0f, 1.0f });
+			createActor(zSphere, material4);
+		}
+	}
 }
 
 /**
@@ -133,7 +137,7 @@ Color Raycaster::shoot(ray3f& pixelRay)
 
 	for (auto actor : _scene->actors)
 	{
-		float t = std::numeric_limits<float>::max();
+		float t;
 
 		if (actor->shape()->intersect(pixelRay, t))
 		{
@@ -150,17 +154,20 @@ Color Raycaster::shoot(ray3f& pixelRay)
 				for (auto light : _scene->lights)
 				{
 					vec3f lightDirection = light->position() - interPoint;
-					ray3f lightRay{ interPoint, lightDirection.versor() };
+					ray3f lightRay{ interPoint, lightDirection.versor()};
 					Color lightColor = light->lightColor(lightDirection.length());
 
+					float minDistance2 = std::numeric_limits<float>::max();
 					for (auto shadowActor : _scene->actors)
 					{
 						float shadowInterPoint;
-						if (shadowActor->shape()->intersect(lightRay, shadowInterPoint) && shadowActor != actor
-							&& math::isNegative(shadowInterPoint - lightDirection.length()))
+						if (shadowActor->shape()->intersect(lightRay, shadowInterPoint) && shadowActor != actor)
 						{
-							flag = true;
-							break;
+							if(shadowInterPoint < minDistance2)
+							{
+								minDistance2 = shadowInterPoint;
+								flag = true;
+							}
 						}
 					}
 
@@ -189,6 +196,7 @@ void Raycaster::render()
 	camN = m[2];
 
 	ray3f pixelRay{ _camera->position(), -camN };
+	Color rayColor;
 
 	float Zp = _camera->nearPlane();
 	for (int j = 0; j < _n; ++j)
@@ -202,13 +210,13 @@ void Raycaster::render()
 			vec3f p = (Xp * camU + Yp * camV - Zp * camN).versor();
 			pixelRay.direction = p;
 
-			Color rayColor = shoot(pixelRay);
+			rayColor = shoot(pixelRay);
 
-			_bmp[i + j * _m] = colorToPixel(rayColor);
+			// _bmp[i + j * _m] = colorToPixel(rayColor);
 			writeColor(rayColor);
 		}
 	}
 
-	_bmp.save(_imageName);
+	// _bmp.save(_imageName);
 }
 
