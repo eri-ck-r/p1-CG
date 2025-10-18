@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <fstream>
+#include <iostream>
 
 #include "Scene.h"
 #include "Actor.h"
@@ -47,13 +48,10 @@ private:
 		return Material::makeUse(new Material(Color{ r, g, b, alpha }));
 	}
 
-	void generateMaterials()
-	{
-
-	}
-
+	static
+	void writeColor(Color c);
 public:
-	Raycaster(int width, float aspectRatio, std::string imageName) :
+	Raycaster(int width, float aspectRatio, const char* imageName) :
 		_m(width), _n((int)(width / aspectRatio)),
 		_scene(Scene::makeUse(Scene::makeUse(new Scene()))),
 		_camera(Camera::makeUse(new Camera(aspectRatio))),
@@ -81,10 +79,15 @@ public:
 
 	void createSphereActor(const vec3f& center,
 		const float& radius,
-		const vec3f& scale,
-		Material* material);
+		Material* material,
+		const vec3f& scale = { 1.0f, 1.0f, 1.0f });
 
-	void createPlaneActor(const vec3f&, const vec3f&, const vec2f&, Material* material);
+	void createPlaneActor(const vec3f& P,
+		const vec3f& angles,
+		Material* material,
+		const vec2f& scale = { 1.0f, 1.0f });
+
+	Color shoot(ray3f& ray);
 
 	void render();
 
