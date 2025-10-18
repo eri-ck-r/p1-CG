@@ -48,10 +48,10 @@ struct Settings
 {
 	int m{};
 	int n{};
-	int W{};
-	int H{};
-	Settings(int m, float aspect):
-		m(m), n(int(m/aspect)), W(m), H(n)
+	float W{};
+	float H{};
+	Settings(int m, float aspect) :
+		m(m), n(int(m / aspect)), W(m), H(n)
 	{
 		//do nothing
 	}
@@ -204,24 +204,11 @@ void createSphereActor(Scene* scene,
 int
 main(int argc, char** argv)
 {
-
 	std::ofstream of{ "image.ppm" };
-
-	//puts("Ds template by Paulo Pagliosa (ppagliosa@gmail.com)\n");
-	//puts("Camera controls keys:\n"
-	//	"(w) move forward  (s) move backward\n"
-	//	"(a) move left     (d) move right\n"
-	//	"(q) move up       (z) move down\n");
-	//puts("Mouse controls:\n"
-	//	"(scroll wheel)    zoom\n"
-	//	"(middle-click)    pan\n"
-	//	"(Alt+right-click) rotate");
-
 
 	Reference<Scene> scene = Scene::makeUse(new Scene());
 	Reference<Camera> camera = Camera::makeUse(new Camera());
-	Settings settings(800, 16.0f/9.0f);
-
+	Settings settings(1920, 16.0f / 9.0f);
 
 	auto redMaterial = createMaterial(1.0f, 0.0f, 0.0f);
 	auto greenMaterial = createMaterial(0.0f, 1.0f, 0.0f);
@@ -234,6 +221,7 @@ main(int argc, char** argv)
 	auto sphere1 = createSphere({ 0.0f, 2.0f, 0.0f }, 2.0f);
 	auto sphere2 = createSphere({ 0.0f, -100.0f, 0.0f }, 100.0f);
 	auto sphere3 = createSphere({ 4.0f, 4.0f, 0.0f }, 2.0f);
+	auto sphere4 = createSphere({ -4.0f, 7.0f, 4.0f }, 2.0f, { 3.0f, 5.0f, 1.0f });
 
 	createAxis(scene, yellowMaterial, purpleMaterial, greenMaterial, greyMaterial);
 
@@ -242,26 +230,20 @@ main(int argc, char** argv)
 	auto plane3 = createPlane({ 3.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
 
 	createActor(scene, plane1, redMaterial);
-	//createActor(scene, plane2, greenMaterial);
-	//createActor(scene, plane3, blueMaterial);
 
 	createActor(scene, sphere1, blueMaterial);
 	createActor(scene, sphere2, pinkMaterial);
 	createActor(scene, sphere3, redMaterial);
+	//createActor(scene, sphere4, greenMaterial);
 
 	scene->backgroundColor = Color{ 0.678f, 0.848f, 0.90f };
 	scene->ambientLight = Color{ 0.412f, 0.412f, 0.412f };
 
 	createLight(scene, { 4.0f, 2.0f, 3.0f }, Color{ 1.0f, 1.0f, 1.0f }); // branca 
-	//createLight(scene, { -10.0f, 9.0f, -10.0f }, Color{ 0.0f, 1.0f, 0.816f }); // azul
 
-
-	camera->setDefaultView(16.0f/9.0f);
-	camera->setPosition({ 5.0f, 3.0f, 20.0f });
-
-	//camera->setViewUp({ 0.0f , 1.0f, 0.0f });
-	//camera->pitch(30);
-	//GLImage image{ settings.m, settings.n };
+	camera->setDefaultView(16.0f / 9.0f);
+	//camera->setNearPlane(1.0f);
+	camera->setPosition({ 15.0f, 3.0f, 10.0f });
 	camera->setDirectionOfProjection((vec3f{ 0,0,1 } - camera->position()).versor());
 	const auto& m = camera->cameraToWorldMatrix();
 
@@ -270,38 +252,26 @@ main(int argc, char** argv)
 	camV = m[1];
 	camN = m[2];
 
-
 	writeHeader(of, settings);
 
 	ray3f ray;
 
-	camera->setClippingPlanes(1000.0f, 300.0f);
+	//camera->setClippingPlanes(1.0f, 300.0f);
 	settings.H = camera->windowHeight();
 	settings.W = settings.H * (16.0f / 9.0f);
 
 	camera->print();
-	
-
-	/*
-	float F, B;
-	camera->clippingPlanes(F, B);
-	auto z = B / F * 0.5f;
-	B = vec3f{ settings.W * z, settings.H * z, B }.length();
-	ray.tMin = F;
-	ray.tMax = B;
-	*/
 
 	ray.set(camera->position(), -camN);
 
+	float Zp = camera->nearPlane();
 	for (int j = 0; j < settings.n; ++j)
 	{
 		std::clog << "\rScanlines remaining: " << (settings.n - j) << ' ' << std::flush;
+		float Yp = (settings.H / 2.0f) - ((settings.H / (float)settings.n) * (j + 0.5f));
 		for (int i = 0; i < settings.m; i++)
 		{
-			//determinar o Xp e o Yp
 			float Xp = (((settings.W * (i + 0.5f)) / (float)settings.m)) - (settings.W / 2.0f);
-			float Yp = (settings.H / 2.0f) - ((settings.H / (float)settings.n) * (j + 0.5f));
-			float Zp = camera->nearPlane();
 
 			vec3f p = (Xp * camU + Yp * camV - Zp * camN).versor();
 			ray.direction = p;
@@ -347,18 +317,14 @@ main(int argc, char** argv)
 								vec3f shapeNormal = actor->shape()->normalAt(interPoint);
 								c += actor->material()->diffuse * lightColor * (shapeNormal.dot(lightRay.direction));
 								vec3f reflectionDirection = ((-lightDirection).versor() - 2.0f * (shapeNormal.dot((-lightDirection).versor()) * shapeNormal)).versor();
-								c += actor->material()->specular * lightColor *  pow(-(reflectionDirection.dot(ray.direction)), 64);
+								c += actor->material()->spot * lightColor * pow(-(reflectionDirection.dot(ray.direction)), 64);
 							}
 						}
 					}
 				}
 			}
-			//printar cor
-			// writeColor(std::cout, c);
 			writeColor(of, c);
 		}
-		std::clog.precision(5);
-		//std::clog << "\nd: " << ray.direction.x << " " << ray.direction.y << " " << ray.direction.z;
 	}
 
 	of.close();

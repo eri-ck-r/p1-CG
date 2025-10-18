@@ -13,11 +13,13 @@
   <ItemGroup>
     <ClCompile Include="..\..\Main.cpp" />
     <ClCompile Include="..\..\MainWindow.cpp" />
+    <ClCompile Include="Raycaster.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\MainWindow.h" />
     <ClInclude Include="Actor.h" />
     <ClInclude Include="Plane.h" />
+    <ClInclude Include="Raycaster.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shape3.h" />
     <ClInclude Include="Sphere.h" />
