@@ -1,6 +1,5 @@
 #include "Raycaster.h"
 
-
 /**
 * @brief Creates a Sphere; No rotation required.
 *
@@ -10,9 +9,9 @@
 */
 Reference<Sphere> Raycaster::createSphere(const vec3f& center, const float radius, const vec3f& scale = { 1.0f, 1.0f, 1.0f })
 {
-    Reference<Sphere> sphere = Sphere::makeUse(new Sphere({ {0.0f, 0.0f, 0.0f}, 1.0f }));
-    sphere->setTransform(center, quatf::identity(), radius * scale);
-    return sphere;
+	Reference<Sphere> sphere = Sphere::makeUse(new Sphere({ {0.0f, 0.0f, 0.0f}, 1.0f }));
+	sphere->setTransform(center, quatf::identity(), radius * scale);
+	return sphere;
 }
 
 /**
@@ -22,7 +21,7 @@ Reference<Sphere> Raycaster::createSphere(const vec3f& center, const float radiu
 *  @param angles -- euler angles for z, x and y axis respectively
 *  @param scale -- Vec2f scale, only in vertical and horizontal (x and y)
 */
-Reference<Plane> Raycaster::createPlane(const vec3f& P, const vec3f& angles, const vec2f& scale = {1.0f, 1.0f})
+Reference<Plane> Raycaster::createPlane(const vec3f& P, const vec3f& angles, const vec2f& scale = { 1.0f, 1.0f })
 {
 	Reference<Plane> plane = Plane::makeUse(new Plane(P, { 0.0f, 1.0f, 0.0f }));
 	plane->setTransform(P, quatf::eulerAngles(angles), { scale.x, 1.0f, scale.y });
@@ -31,7 +30,7 @@ Reference<Plane> Raycaster::createPlane(const vec3f& P, const vec3f& angles, con
 
 /**
 * @brief Creates and insert an actor into the scene
-* 
+*
 * @param shape -- Actor's shape
 * @param material -- Actor's material
 */
@@ -43,15 +42,14 @@ void Raycaster::createActor(Shape3* shape, Material* material)
 }
 
 inline
-void Raycaster::writeColor(Color c)
+Pixel Raycaster::colorToPixel(Color c)
 {
-	
-	int iR = (int)(255.999 * c.x);
-	int iG = (int)(255.999 * c.y);
-	int iB = (int)(255.999 * c.z);
 
-	 _of << iR << ' ' << iG << ' ' << iB << '\n';
+	auto iR = (uint8_t)(255.999 * c.x);
+	auto iG = (uint8_t)(255.999 * c.y);
+	auto iB = (uint8_t)(255.999 * c.z);
 
+	return Pixel{ iR, iG, iB };
 }
 
 void Raycaster::createAxis(bool flag = false)
@@ -80,7 +78,7 @@ void Raycaster::createAxis(bool flag = false)
 
 /**
 * @brief Creates a light.
-* 
+*
 * @param position -- Light's position
 * @param color -- Light's color
 */
@@ -101,9 +99,9 @@ void Raycaster::createLight(const vec3f& position, const Color& color)
 * @param center -- Center coordinates
 * @param radius -- Sphere radius
 * @param scale -- vec3f scale in x, y and z axis
-* @param material -- Material to be used 
+* @param material -- Material to be used
 */
-inline
+
 void Raycaster::createSphereActor(const vec3f& center,
 	const float& radius,
 	Material* material,
@@ -114,12 +112,12 @@ void Raycaster::createSphereActor(const vec3f& center,
 
 /**
 * @brief Creates a Square plane Actor;
-* 
+*
 * @param P -- Point which plane passes through
 * @param angles -- Euler angles in radians in z, x and y order
 * @param scale -- Square's x and y scale;
 */
-inline
+
 void Raycaster::createPlaneActor(const vec3f& P,
 	const vec3f& angles,
 	Material* material,
@@ -136,15 +134,18 @@ Color Raycaster::shoot(ray3f& pixelRay)
 	for (auto actor : _scene->actors)
 	{
 		float t = std::numeric_limits<float>::max();
+
 		if (actor->shape()->intersect(pixelRay, t))
 		{
 			if (t < minDistance)
 			{
 				minDistance = t;
-
 				c = actor->material()->ambient;
-				vec3f interPoint = pixelRay(minDistance);
 
+				// iluminaçao = Cd*Cl*(-N*Ll)
+				// onde Cd = cor do material difuso, Cl = cor da luz(tem que calcular o falloff, N = normal
+				// e Ll a direção do raio de luz ( é o lightray)
+				vec3f interPoint = pixelRay(minDistance);
 				bool flag = false;
 				for (auto light : _scene->lights)
 				{
@@ -166,18 +167,17 @@ Color Raycaster::shoot(ray3f& pixelRay)
 					if (flag == false)
 					{
 						vec3f shapeNormal = actor->shape()->normalAt(interPoint);
-						// I =  Od * Il * (N*Ll) -- Equação 4.7
+						// I =  Od * Il * (N*Ll)
 						c += actor->material()->diffuse * lightColor * (shapeNormal.dot(lightRay.direction));
 						vec3f reflectionDirection = ((-lightDirection).versor() - 2.0f * (shapeNormal.dot((-lightDirection).versor()) * shapeNormal)).versor();
-						// I = Os * Ll * (-Rl*V) -- Equação 4.9
 						c += actor->material()->spot * lightColor * pow(-(reflectionDirection.dot(pixelRay.direction)), 64);
 					}
 				}
 			}
 		}
 	}
+	return c;
 }
-
 
 void Raycaster::render()
 {
@@ -201,8 +201,14 @@ void Raycaster::render()
 
 			vec3f p = (Xp * camU + Yp * camV - Zp * camN).versor();
 			pixelRay.direction = p;
-			writeColor(shoot(pixelRay);
+
+			Color rayColor = shoot(pixelRay);
+
+			_bmp[i + j * _m] = colorToPixel(rayColor);
+			writeColor(rayColor);
 		}
 	}
+
+	_bmp.save(_imageName);
 }
 
