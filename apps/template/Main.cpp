@@ -71,7 +71,7 @@ Reference<Material> createMaterial(const float& r, const float& g, const float& 
 int
 main(int argc, char** argv)
 {
-	std::ofstream out{"imagem.ppm"};
+	std::ofstream out{"image.ppm"};
 
 	Raycaster rc(1024, 16.0f/9.0f, out);
 

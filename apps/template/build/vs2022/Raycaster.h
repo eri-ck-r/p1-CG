@@ -22,8 +22,6 @@ private:
 	Reference<Camera> _camera;
 	int _m;
 	int _n;
-	float _W;
-	float _H;
 	float aspectRatio;
 	std::ostream* _out;
 

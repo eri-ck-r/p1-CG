@@ -131,8 +131,8 @@ void Raycaster::render()
 {
 	*_out << "P3\n" << _m << ' ' << _n << "\n255\n";
 
-	_H = _camera->windowHeight();
-	_W = _H * aspectRatio;
+	float H = _camera->windowHeight();
+	float W = H * aspectRatio;
 
 	const auto& m = _camera->cameraToWorldMatrix();
 
@@ -148,10 +148,10 @@ void Raycaster::render()
 	for (int j = 0; j < _n; ++j)
 	{
 		std::clog << "\rScanlines remaining: " << (_n - j) << ' ' << std::flush;
-		float Yp = (_H / 2.0f) - ((_H / (float)_n) * (j + 0.5f));
+		float Yp = (H / 2.0f) - ((H / (float)_n) * (j + 0.5f));
 		for (int i = 0; i < _m; i++)
 		{
-			float Xp = (((_W * (i + 0.5f)) / (float)_m)) - (_W / 2.0f);
+			float Xp = (((W * (i + 0.5f)) / (float)_m)) - (W / 2.0f);
 
 			vec3f p = (Xp * camU + Yp * camV - Zp * camN).versor();
 			pixelRay.direction = p;
@@ -178,7 +178,6 @@ Color Raycaster::shoot(ray3f& pixelRay)
 			if (t < minDistance)
 			{
 				minDistance = t;
-				c = actor->material()->ambient;
 				closestActor = actor;
 			}
 		}
@@ -187,6 +186,7 @@ Color Raycaster::shoot(ray3f& pixelRay)
 	// if the ray intersected any actor
 	if (minDistance != std::numeric_limits<float>::max())
 	{
+		c = closestActor->material()->ambient;
 		// iluminaçao = Cd*Cl*(-N*Ll)
 		// onde Cd = cor do material difuso, Cl = cor da luz(tem que calcular o falloff, N = normal
 		// e Ll a direção do raio de luz ( é o lightray)
@@ -215,9 +215,10 @@ Color Raycaster::shoot(ray3f& pixelRay)
 
 			if (!isOccluded)
 			{
-				// I =  Od * Il * (N*Ll)
+				// I =  Od * Il * (N*Ll) -- Equação 4.8
 				c += closestActor->material()->diffuse * lightColor * (shapeNormal.dot(lightRay.direction));
 				vec3f reflectionDirection = (-(lightRay.direction) - 2.0f * (shapeNormal.dot(-lightRay.direction) * shapeNormal)).versor();
+				// I = Os * Il * (-Rl * V)^ns -- Equação 4.10
 				c += closestActor->material()->spot * lightColor * pow(-(reflectionDirection.dot(pixelRay.direction)), 32);
 			}
 		}
