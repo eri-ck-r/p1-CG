@@ -12,7 +12,6 @@
 #include "Actor.h"
 #include "Sphere.h"
 #include "Plane.h"
-#include "Bitmap.h"
 
 using namespace cg;
 
@@ -25,7 +24,7 @@ private:
 	int _n;
 	float _W;
 	float _H;
-
+	float aspectRatio;
 	std::ostream* _out;
 
 	Reference<Sphere> createSphere(const vec3f&, const float, const vec3f&);
@@ -48,15 +47,21 @@ private:
 		return Material::makeUse(new Material(Color{ r, g, b, alpha }));
 	}
 
-	static
-	Pixel colorToPixel(Color c);
+	Color shoot(ray3f& ray);
 
 public:
-	Raycaster(int width, float aspectRatio, std::ostream& out) :
+	Raycaster() = delete;
+	/*
+	* @brief Raycaster constructor
+	* 
+	* @param width -- Image's width
+	*/
+	explicit Raycaster(int width, float aspectRatio, std::ostream& out) :
 		_m(width), _n((int)(width / aspectRatio)),
 		_scene(Scene::makeUse(Scene::makeUse(new Scene()))),
 		_camera(Camera::makeUse(new Camera(aspectRatio))),
-		_out(&out)
+		_out(&out),
+		aspectRatio(aspectRatio)
 	{
 		_camera->setDefaultView(aspectRatio);
 		_camera->setDirectionOfProjection(vec3f::null() - _camera->position());
@@ -65,8 +70,6 @@ public:
 		_scene->backgroundColor = Color{ 0.678f, 0.848f, 0.90f }; //Light Blue
 		_scene->ambientLight = Color{ 0.412f, 0.412f, 0.412f }; // Light Gray
 
-		_H = _camera->windowHeight();
-		_W = _H * aspectRatio;
 	}
 
 	void writeHeader()
@@ -89,19 +92,39 @@ public:
 
 	void createAxis(Material*, Material*, Material*, Material*, bool);
 
+/**
+* @brief Creates a light.
+*
+* @param position -- Light's position
+* @param color -- Light's color
+*/
 	void createLight(const vec3f& position, const Color& color);
 
+/**
+* @brief Creates a Sphere Actor; No rotation required.
+*
+* @param center -- Center coordinates
+* @param radius -- Sphere radius
+* @param scale -- vec3f scale in x, y and z axis
+* @param material -- Material to be used
+*/
 	void createSphereActor(const vec3f& center,
 		const float& radius,
 		Material* material,
-		const vec3f& scale);
+		const vec3f& scale = {1.0f, 1.0f, 1.0f});
 
+/**
+* @brief Creates a Square plane Actor;
+*
+* @param P -- Point which plane passes through
+* @param angles -- Euler angles in radians in z, x and y order
+* @param scale -- Square's x and y scale;
+*/
 	void createPlaneActor(const vec3f& P,
 		const vec3f& angles,
 		Material* material,
-		const vec2f& scale);
+		const vec2f& scale = {1.0f, 1.0f});
 
-	Color shoot(ray3f& ray);
 
 	void render();
 

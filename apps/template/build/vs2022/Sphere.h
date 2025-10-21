@@ -22,8 +22,8 @@ public:
 		ray3f newRay{ newPoint, newDirection.versor() };
 
 		float a = newRay.direction.dot(newRay.direction);
-		float b = 2.0f * newRay.direction.dot(newRay.origin - _center);
-		float c = (newRay.origin - _center).dot(newRay.origin - _center) - _radius * _radius;
+		float b = 2.0f * newRay.direction.dot(newRay.origin);
+		float c = (newRay.origin).dot(newRay.origin) - _radius * _radius;
 
 		float delta = b * b - (4 * a * c);
 		if (cg::math::isNegative(delta))

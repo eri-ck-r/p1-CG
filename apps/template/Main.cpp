@@ -74,26 +74,36 @@ main(int argc, char** argv)
 	std::ofstream out{"imagem.ppm"};
 
 	Raycaster rc(1024, 16.0f/9.0f, out);
-	rc.writeHeader();
 
 	auto redMaterial = createMaterial(1.0f, 0.0f, 0.0f);
 	auto greenMaterial = createMaterial(0.0f, 1.0f, 0.0f);
-	auto blueMaterial = createMaterial(0.0f, 0.0f, 1.0f);
+	auto blueMaterial = createMaterial(0.3f, 0.3f, 1.0f);
 	auto pinkMaterial = createMaterial(0.788f, 0.2f, 0.753f);
 	auto yellowMaterial = createMaterial(1.0f, 1.0f, 0.0f);
 	auto purpleMaterial = createMaterial(0.435f, 0.0f, 1.0f);
 	auto greyMaterial = createMaterial(0.5f, 0.5f, 0.5f);
+	auto orangeMaterial = createMaterial(1.0f, 0.533f, 0.0f);
+	auto whiteMaterial = createMaterial(1.0f, 1.0f, 1.0f);
 
-	rc.createSphereActor({ 0.1f, 2.3f, 0.1f }, 2.0f, blueMaterial, {1.0f, 1.0f, 1.0f});
-	rc.createSphereActor({ 0.0f, -100.0f, 0.0f }, 100.0f, pinkMaterial, {1.0f, 1.0f, 1.0f});
-	//rc.createPlaneActor({ 0.0f, -1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, pinkMaterial, { 100.0f, 100.0f });
-	rc.createSphereActor({ 4.0f, 4.0f, 0.0f }, 2.0f, redMaterial, { 1.0f, 1.0f, 1.0f});
+	rc.createSphereActor({ 3.0f, 2.0f, -2.0f }, 2.0f, blueMaterial);
+	rc.createSphereActor({ -2.0f, 3.0f, 4.0f }, 2.0f, redMaterial);
+	rc.createSphereActor({0.0f, 3.0f, 0.0f}, 1.0f, orangeMaterial, {1.2f, 3.0f, 1.2f});
 
-	//rc.createPlaneActor({ 0.0f, 5.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, redMaterial, {1.0f, 1.0f});
+	rc.createPlaneActor({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, whiteMaterial, {100.0f, 100.0f});
+	rc.createPlaneActor({ 0.0f, 0.0f, -20.0f }, { 90.0f, 0.0f, 0.0f }, whiteMaterial, { 100.0f, 100.0f });
+	rc.createPlaneActor({ 20.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 90.0f }, whiteMaterial, { 100.0f, 100.0f });
+
+	rc.createPlaneActor({ -10.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, -45.0f }, pinkMaterial, { 3.0f, 3.0f });
+	rc.createPlaneActor({ 2.0f, 2.0f, -7.5f, }, { 90.0f, 0.0f, 0.0f }, pinkMaterial, { 3.0f, 3.0f });
+	rc.createPlaneActor({ 2.0f, 5.0f, -10.5f, }, { 0.0f, 0.0f, 0.0f }, pinkMaterial, { 3.0f, 3.0f });
 
 	rc.createLight({ 4.0f, 8.0f, 3.0f }, Color{ 1.0f, 1.0f, 1.0f }); // branca
-	//rc.createAxis(redMaterial, blueMaterial, greenMaterial, greyMaterial, false);
-	rc.camera()->setPosition({ 5.0f, 4.0f, -10.0f });
+	rc.createLight({ -4.0f, 2.5f, -3.0f }, Color{ 0.2f, 1.0f, 0.3f});
+
+	//rc.createAxis(redMaterial, blueMaterial, greenMaterial, greyMaterial, true);
+
+	
+	rc.camera()->setPosition({ -10.0f, 10.0f, -15.0f });
 	rc.camera()->setDirectionOfProjection(vec3f::null() - rc.camera()->position());
 	rc.render();
 	out.close();
