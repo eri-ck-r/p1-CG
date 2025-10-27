@@ -20,9 +20,10 @@ public:
         vec3f newOrigin = worldToLocalMatrix().transform(ray.origin);
         vec3f newDirection = worldToLocalMatrix().transformVector(ray.direction);
         ray3f newRay{ newOrigin, newDirection };
-        float tLocal = (_p - newRay.origin).dot(_N) / (newRay.direction.versor().dot(_N)); //todo simplifiacr isso aqui pq o plano tem origem no 0 0 0 e normal 0 1 0 entao fica -newOrigin.y/newDirection.y
+        float tLocal = -newRay.origin.y / (newRay.direction.y); //TODO simplifiacr isso aqui pq o plano tem origem no 0 0 0 e normal 0 1 0 entao fica -newOrigin.y/newDirection.y
         vec3f interPoint = newRay(tLocal);
         t = tLocal / newDirection.length();
+        // retornar verdadeiro se -1 < x < 1 e -1 < z < 1
         return cg::math::abs(interPoint.x) <= 1.0f && cg::math::abs(interPoint.z) <= 1.0f && cg::math::isPositive(t);
     }
 
