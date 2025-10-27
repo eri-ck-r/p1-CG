@@ -14,33 +14,33 @@
     <ClCompile Include="..\..\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\MainWindow.cpp">
+    <ClCompile Include="..\..\src\MainWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Raycaster.cpp">
+    <ClCompile Include="..\..\src\Raycaster.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\MainWindow.h">
+    <ClInclude Include="..\..\include\Actor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
+    <ClInclude Include="..\..\include\MainWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Shape3.h">
+    <ClInclude Include="..\..\include\Plane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sphere.h">
+    <ClInclude Include="..\..\include\Raycaster.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Actor.h">
+    <ClInclude Include="..\..\include\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Plane.h">
+    <ClInclude Include="..\..\include\Shape3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Raycaster.h">
+    <ClInclude Include="..\..\include\Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

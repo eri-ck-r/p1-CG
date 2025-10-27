@@ -30,7 +30,7 @@
 // Author: Paulo Pagliosa
 // Last revision: 07/11/2022
 
-#include "MainWindow.h"
+#include "../include/MainWindow.h"
 
 
 /////////////////////////////////////////////////////////////////////

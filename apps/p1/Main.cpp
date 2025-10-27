@@ -31,16 +31,16 @@
 // Last revision: 07/11/2022
 
 #include "graphics/Application.h"
-#include "MainWindow.h"
+#include "include/MainWindow.h"
 
 #include <cmath>
 #include <fstream>
 
-#include "Scene.h"
-#include "Actor.h"
-#include "Sphere.h"
-#include "Plane.h"
-#include "Raycaster.h"
+#include "include/Scene.h"
+#include "include/Actor.h"
+#include "include/Sphere.h"
+#include "include/Plane.h"
+#include "include/Raycaster.h"
 
 using namespace cg;
 
