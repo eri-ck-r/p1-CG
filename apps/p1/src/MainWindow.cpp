@@ -31,7 +31,7 @@
 // Last revision: 07/11/2022
 
 #include "../include/MainWindow.h"
-
+#include "../include/Raycaster.h"
 
 /////////////////////////////////////////////////////////////////////
 //

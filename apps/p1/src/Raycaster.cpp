@@ -91,7 +91,7 @@ void Raycaster::createLight(const vec3f& position, const Color& color)
 	light->setPosition(position);
 	light->color = color;
 	light->setType(Light::Type::Point);
-	light->falloff = Light::Falloff::Linear;
+	light->falloff = Light::Falloff::Constant;
 	_scene->lights.add(light);
 }
 
@@ -219,7 +219,7 @@ Color Raycaster::shoot(ray3f& pixelRay)
 				c += closestActor->material()->diffuse * lightColor * (shapeNormal.dot(lightRay.direction));
 				vec3f reflectionDirection = (-(lightRay.direction) - 2.0f * (shapeNormal.dot(-lightRay.direction) * shapeNormal)).versor();
 				// I = Os * Il * (-Rl * V)^ns -- Equação 4.10
-				c += closestActor->material()->spot * lightColor * pow(-(reflectionDirection.dot(pixelRay.direction)), 32);
+				c += closestActor->material()->spot * lightColor * pow(-(reflectionDirection.dot(pixelRay.direction)), 8);
 			}
 		}
 	}

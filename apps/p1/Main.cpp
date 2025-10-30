@@ -85,25 +85,26 @@ main(int argc, char** argv)
 	auto orangeMaterial = createMaterial(1.0f, 0.533f, 0.0f);
 	auto whiteMaterial = createMaterial(1.0f, 1.0f, 1.0f);
 
-	rc.createSphereActor({ 3.0f, 2.0f, -2.0f }, 2.0f, blueMaterial);
-	rc.createSphereActor({ -2.0f, 3.0f, 4.0f }, 2.0f, redMaterial);
-	rc.createSphereActor({ 0.0f, 3.0f, 0.0f }, 1.0f, orangeMaterial, { 1.2f, 3.0f, 1.2f });
+	rc.createSphereActor({ 2.0f, 2.5f, -2.1f }, 2.5f, greyMaterial);
+	rc.createSphereActor({ -2.0f, 2.5f, 2.0f }, 2.5f, greyMaterial);
+	rc.createSphereActor({ 0.0f, 4.0f, 0.0f }, 4.0f, redMaterial);
+	rc.createSphereActor({ 0.0f, -150.0f, 0.0 }, 150.0f, whiteMaterial);
 
-	rc.createPlaneActor({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, whiteMaterial, { 100.0f, 100.0f });
-	rc.createPlaneActor({ 0.0f, 0.0f, -20.0f }, { 90.0f, 0.0f, 0.0f }, whiteMaterial, { 100.0f, 100.0f });
+	//rc.createPlaneActor({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, whiteMaterial, { 100.0f, 100.0f });
+	/*rc.createPlaneActor({ 0.0f, 0.0f, -20.0f }, { 90.0f, 0.0f, 0.0f }, whiteMaterial, { 100.0f, 100.0f });
 	rc.createPlaneActor({ 20.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 90.0f }, whiteMaterial, { 100.0f, 100.0f });
 
 	rc.createPlaneActor({ -10.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, -45.0f }, pinkMaterial, { 3.0f, 3.0f });
 	rc.createPlaneActor({ 2.0f, 2.0f, -7.5f, }, { 90.0f, 0.0f, 0.0f }, pinkMaterial, { 3.0f, 3.0f });
 	rc.createPlaneActor({ 2.0f, 5.0f, -10.5f, }, { 0.0f, 0.0f, 0.0f }, pinkMaterial, { 3.0f, 3.0f });
+	*/
+	rc.createLight({ 4.5f, 6.0f, 5.7f }, Color{ 1.0f, 1.0f, 1.0f }); // branca
+	rc.createLight({ -10.0f, 6.0f, 10.0f }, Color{ 1.0f, 1.0f, 1.0f });
 
-	rc.createLight({ 4.0f, 8.0f, 3.0f }, Color{ 1.0f, 1.0f, 1.0f }); // branca
-	rc.createLight({ -4.0f, 2.5f, -3.0f }, Color{ 0.2f, 1.0f, 0.3f });
-
-	//rc.createAxis(redMaterial, blueMaterial, greenMaterial, greyMaterial, true);
+	rc.createAxis(redMaterial, blueMaterial, greenMaterial, greyMaterial, true);
 
 
-	rc.camera()->setPosition({ -10.0f, 10.0f, -15.0f });
+	rc.camera()->setPosition({ -10.0f, 6.0f, 10.0f });
 	rc.camera()->setDirectionOfProjection(vec3f::null() - rc.camera()->position());
 	rc.render();
 	out.close();
