@@ -58,6 +58,14 @@ public:
   }
 
   virtual void setTransform(const mat4f&, const mat4f&);
+
+  /**
+  * @brief Sets the object's transform (TRS)
+  * 
+  * @param vec3f& p -- Position
+  * @param quatf& r -- Rotation axis
+  * @param vec3f& s -- Scale
+  */
   virtual void setTransform(const vec3f&, const quatf&, const vec3f&);
 
 protected:

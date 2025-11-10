@@ -71,43 +71,9 @@ Reference<Material> createMaterial(const float& r, const float& g, const float& 
 int
 main(int argc, char** argv)
 {
-	std::ofstream out{ "image.ppm" };
-
-	Raycaster rc(1024, 16.0f / 9.0f, out);
-
-	auto redMaterial = createMaterial(1.0f, 0.0f, 0.0f);
-	auto greenMaterial = createMaterial(0.0f, 1.0f, 0.0f);
-	auto blueMaterial = createMaterial(0.3f, 0.3f, 1.0f);
-	auto pinkMaterial = createMaterial(0.788f, 0.2f, 0.753f);
-	auto yellowMaterial = createMaterial(1.0f, 1.0f, 0.0f);
-	auto purpleMaterial = createMaterial(0.435f, 0.0f, 1.0f);
-	auto greyMaterial = createMaterial(0.5f, 0.5f, 0.5f);
-	auto orangeMaterial = createMaterial(1.0f, 0.533f, 0.0f);
-	auto whiteMaterial = createMaterial(1.0f, 1.0f, 1.0f);
-
-	rc.createSphereActor({ 2.0f, 2.5f, -2.1f }, 2.5f, greyMaterial);
-	rc.createSphereActor({ -2.0f, 2.5f, 2.0f }, 2.5f, greyMaterial);
-	rc.createSphereActor({ 0.0f, 4.0f, 0.0f }, 4.0f, redMaterial);
-	rc.createSphereActor({ 0.0f, -150.0f, 0.0 }, 150.0f, whiteMaterial);
-
-	//rc.createPlaneActor({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, whiteMaterial, { 100.0f, 100.0f });
-	/*rc.createPlaneActor({ 0.0f, 0.0f, -20.0f }, { 90.0f, 0.0f, 0.0f }, whiteMaterial, { 100.0f, 100.0f });
-	rc.createPlaneActor({ 20.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 90.0f }, whiteMaterial, { 100.0f, 100.0f });
-
-	rc.createPlaneActor({ -10.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, -45.0f }, pinkMaterial, { 3.0f, 3.0f });
-	rc.createPlaneActor({ 2.0f, 2.0f, -7.5f, }, { 90.0f, 0.0f, 0.0f }, pinkMaterial, { 3.0f, 3.0f });
-	rc.createPlaneActor({ 2.0f, 5.0f, -10.5f, }, { 0.0f, 0.0f, 0.0f }, pinkMaterial, { 3.0f, 3.0f });
-	*/
-	rc.createLight({ 4.5f, 6.0f, 5.7f }, Color{ 1.0f, 1.0f, 1.0f }); // branca
-	rc.createLight({ -10.0f, 6.0f, 10.0f }, Color{ 1.0f, 1.0f, 1.0f });
-
-	rc.createAxis(redMaterial, blueMaterial, greenMaterial, greyMaterial, true);
+	cg::Application{ new MainWindow(1024,768) }.run(argc, argv);
 
 
-	rc.camera()->setPosition({ -10.0f, 6.0f, 10.0f });
-	rc.camera()->setDirectionOfProjection(vec3f::null() - rc.camera()->position());
-	rc.render();
-	out.close();
 
 	return 0;
 }

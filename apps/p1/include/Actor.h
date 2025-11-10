@@ -13,28 +13,45 @@ namespace cg {
     private:
         Reference<Shape3> _shape;
         Reference<Material> _material;
-        //mat4f _transform;
-        //mat3f _normal;
+        Reference<TriangleMesh> _mesh;
+        mat4f _transform;
+        mat3f _normal;
 
     public:
-        Actor(const Shape3& shape) : _shape{&shape}, _material{Material::defaultMaterial()} {}
+        Actor(const Shape3& shape, const TriangleMesh& mesh) :
+            _shape{&shape},
+            _mesh{&mesh},
+            _material{Material::defaultMaterial()}
+        {
+            // do nothing
+        }
 
-       /* void setTransform(const mat4f& transform)
+        /*void setTransform(const mat4f& transform)
         {
             _transform = transform;
             _normal = mat3f{ transform };
         }
-
-        }*/
+        */
 
         void setMaterial(const Material& material)
         {
             _material = &material;
         }
 
-        Shape3* shape() { return _shape; }
+        Shape3* shape()
+        {
+            return _shape;
+        }
 
-        Material* material() const { return _material; }
+        Material* material()
+        {
+            return _material;
+        }
+
+        TriangleMesh* mesh()
+        {
+            return _mesh;
+        }
 
         //mat4f& transform() { return _transform; };
     };

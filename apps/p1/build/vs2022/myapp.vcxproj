@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\Actor.h" />
+    <ClInclude Include="..\..\include\Intersection.h" />
     <ClInclude Include="..\..\include\MainWindow.h" />
     <ClInclude Include="..\..\include\Plane.h" />
     <ClInclude Include="..\..\include\Raycaster.h" />

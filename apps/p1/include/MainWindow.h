@@ -34,35 +34,59 @@
 #define __MainWindow_h
 
 #include "graphics/GLRenderWindow3.h"
-
+#include "../include/Raycaster.h"
 
 /////////////////////////////////////////////////////////////////////
 //
 // MainWindow: template main window class
 // ==========
-class MainWindow final: public cg::GLRenderWindow3
+class MainWindow final : public cg::GLRenderWindow3
 {
 public:
-  MainWindow(int width, int height);
+	MainWindow(int width, int height);
 
+	void createSphere(vec3f pos, float radius)
+	{
+		Reference<Sphere> newSphere = Sphere::makeUse(new Sphere(vec3f::null(), 1.0f));
+		newSphere->setTransform(pos, quatf::identity(), vec3f{ 1.0f,1.0f,1.0f } * radius);
+		Reference<Actor> newActor = Actor::makeUse(new Actor(*newSphere, *g3()->sphere()));
+		_scene->actors.add(newActor);
+	}
 private:
-  using Base = cg::GLRenderWindow3;
+	using Base = cg::GLRenderWindow3;
 
-  // Attribute examples
-  cg::Color _lineColor;
-  cg::Color _meshColor;
-  float _radius;
-  float _speed;
-  bool _animate{true};
-  bool _showGround{true};
+	Reference<Scene> _scene;
 
-  // Overridden method examples
-  void initialize() override;
-  void update() override;
-  void renderScene() override;
-  bool keyInputEvent(int, int, int) override;
-  void gui() override;
+	Raycaster rc;
+	// Attribute examples
+	cg::Color _lineColor;
+	cg::Color _meshColor;
+	float _radius;
+	float _speed;
+	float _cameraSpeed = 1.0f;
+	bool _animate{ true };
+	bool _showGround{ true };
 
+	// Overridden method examples
+	void initialize() override;
+	void update() override;
+	void renderScene() override;
+	bool keyInputEvent(int, int, int) override;
+	bool onMouseLeftPress(int i, int j) override;
+	bool mouseButtonInputEvent(int button, int action, int) override;
+
+	void gui() override;
+
+
+	//gui helper methods and attributes
+	Reference<Actor> currentSelectedActor;
+	float _objectRadius = 1;
+	vec3f _objectScale;
+	vec3f _objectPosition;
+
+	void updateActorGUI();
+	void updateActor();
+	void removeActor();
 }; // MainWindow
 
 #endif // __MainWindow_h

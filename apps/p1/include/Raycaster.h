@@ -12,6 +12,7 @@
 #include "Actor.h"
 #include "Sphere.h"
 #include "Plane.h"
+#include "Intersection.h"
 
 using namespace cg;
 
@@ -45,29 +46,22 @@ private:
 		return Material::makeUse(new Material(Color{ r, g, b, alpha }));
 	}
 
-	Color shoot(ray3f& ray);
+	Color shade(ray3f& ray);
 
 public:
-	Raycaster() = delete;
+	Raycaster() = default;
 	/*
 	* @brief Raycaster constructor
 	*
 	* @param width -- Image's width
+	* @param aspectRatio - Image's Aspect Ratio
+	* @param out  -- ostream object for outputting the colors
 	*/
-	explicit Raycaster(int width, float aspectRatio, std::ostream& out) :
+	Raycaster(int width, float aspectRatio) :
 		_m(width), _n((int)(width / aspectRatio)),
-		_scene(Scene::makeUse(Scene::makeUse(new Scene()))),
-		_camera(Camera::makeUse(new Camera(aspectRatio))),
-		_out(&out),
 		aspectRatio(aspectRatio)
 	{
-		_camera->setDefaultView(aspectRatio);
-		_camera->setDirectionOfProjection(vec3f::null() - _camera->position());
-		//_camera->setClippingPlanes(300.0f, 600.0f);
-
-		_scene->backgroundColor = Color{ 0.678f, 0.848f, 0.90f }; //Light Blue
-		_scene->ambientLight = Color{ 0.412f, 0.412f, 0.412f }; // Light Gray
-
+		// do nothing
 	}
 
 	void writeHeader()
@@ -123,9 +117,19 @@ public:
 		Material* material,
 		const vec2f& scale = { 1.0f, 1.0f });
 
+	/**
+	* @brief creates a ray from i,j screen coordinates
+	* 
+	* @param i -- i screen coordinate
+	* @param j -- j screen coordinate
+	*/
+	ray3f makeRay(int i, int j);
+
+	bool shoot(ray3f ray, Intersection& inter);
 
 	void render();
 
+	friend class MainWindow;
 };
 
 
