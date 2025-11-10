@@ -135,7 +135,38 @@ MainWindow::keyInputEvent(int key, int action, int mods)
 			std::cout << "aa";
 			return true;
 		}
-	return Base::keyInputEvent(key, action, mods);
+
+	if (ImGui::GetIO().WantCaptureKeyboard || action == GLFW_RELEASE)
+		return false;
+
+	const auto delta = camera()->distance() * 0.01f;
+	auto d = vec3f::null();
+
+	switch (key)
+	{
+	case GLFW_KEY_W:
+		d.z -= delta;
+		break;
+	case GLFW_KEY_S:
+		d.z += delta;
+		break;
+	case GLFW_KEY_A:
+		d.x -= delta;
+		break;
+	case GLFW_KEY_D:
+		d.x += delta;
+		break;
+	case GLFW_KEY_Q:
+		d.y += delta;
+		break;
+	case GLFW_KEY_Z:
+		d.y -= delta;
+		break;
+	default:
+		return false;
+	}
+	camera()->translate(d*_cameraSpeed);
+	return true;
 }
 
 bool
@@ -183,13 +214,14 @@ void
 MainWindow::gui()
 {
 	// Put your gui code here. Example:
-	ImGui::SetNextWindowSize({ 360, 180 });
+	ImGui::SetNextWindowSize({ 420, 240 });
 	ImGui::Begin("Template GUI");
 	ImGui::ColorEdit3("Line Color", (float*)&_lineColor);
 	ImGui::ColorEdit3("Mesh Color", (float*)&_meshColor);
 	ImGui::Separator();
 	ImGui::Checkbox("Animate", &_animate);
 	ImGui::SliderFloat("Speed", &_speed, 0.001f, 0.01f);
+	ImGui::SliderFloat("Camera speed", &_cameraSpeed, 1.0f, 10.0f);
 	ImGui::Checkbox("Show Ground", &_showGround);
 	ImGui::Separator();
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
@@ -209,11 +241,8 @@ MainWindow::gui()
 	if (ImGui::Button("Modify"))
 		updateActor();
 	if (ImGui::Button("Delete"))
-	{
 		removeActor();
-	}
 	ImGui::End();
-
 
 }
 
