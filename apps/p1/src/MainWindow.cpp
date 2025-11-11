@@ -185,9 +185,9 @@ MainWindow::mouseButtonInputEvent(int button, int action, int mods)
 			int x, y;
 			cursorPosition(x, y);
 			auto mouseRay = rc.makeRay(x, y);
-			createSphere(mouseRay(5), 1);
+			createSphere(mouseRay(_objectCreationDistance), 1);
+
 			return true;
-		
 		}
 	}
 	return Base::mouseButtonInputEvent(button, action, mods);
@@ -222,6 +222,7 @@ MainWindow::gui()
 	ImGui::Checkbox("Animate", &_animate);
 	ImGui::SliderFloat("Speed", &_speed, 0.001f, 0.01f);
 	ImGui::SliderFloat("Camera speed", &_cameraSpeed, 1.0f, 10.0f);
+	ImGui::SliderFloat("Object Creation distace", &_objectCreationDistance, 1.0f, 50.0f);
 	ImGui::Checkbox("Show Ground", &_showGround);
 	ImGui::Separator();
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",

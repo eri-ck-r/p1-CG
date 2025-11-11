@@ -84,6 +84,7 @@ private:
 	vec3f _objectScale;
 	vec3f _objectPosition;
 
+	float _objectCreationDistance = 5;
 	void updateActorGUI();
 	void updateActor();
 	void removeActor();
