@@ -21,6 +21,7 @@ public:
 		vec3f newDirection = worldToLocalMatrix().transformVector(ray.direction);
 		ray3f newRay{ newPoint, newDirection.versor() };
 
+		//todo trocar isso por 1
 		float a = newRay.direction.dot(newRay.direction);
 		float b = 2.0f * newRay.direction.dot(newRay.origin);
 		float c = (newRay.origin).dot(newRay.origin) - _radius * _radius;
