@@ -30,7 +30,7 @@
 * sepa é só um glBackground() kkkk sla
 * 
 * vou ver como usa CMake tambem... nao quero ser refém de windows
-* nessa porra
+* nessa porra.
 * 
 * quando for fazer o código c++ do raycaster bora segregar tudo em funçao.... ta feiao mane
 * 
