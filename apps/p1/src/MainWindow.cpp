@@ -106,7 +106,7 @@ MainWindow::renderScene()
 	 */
 	for (auto actor : _scene->actors)
 	{
-		mat4f trs = actor->shape()->localToWorldMatrix();
+		auto& trs = actor->shape()->localToWorldMatrix();
 		mat3f n(trs);
 		g3->drawMesh(*actor->mesh(),
 			trs,
@@ -139,7 +139,7 @@ MainWindow::keyInputEvent(int key, int action, int mods)
 	if (ImGui::GetIO().WantCaptureKeyboard || action == GLFW_RELEASE)
 		return false;
 
-	const auto delta = camera()->distance() * 0.01f;
+	const auto delta = camera()->distance() * 0.05f;
 	auto d = vec3f::null();
 
 	switch (key)

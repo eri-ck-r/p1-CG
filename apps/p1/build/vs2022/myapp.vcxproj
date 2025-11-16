@@ -19,6 +19,7 @@
     <ClInclude Include="..\..\include\Actor.h" />
     <ClInclude Include="..\..\include\Intersection.h" />
     <ClInclude Include="..\..\include\MainWindow.h" />
+    <ClInclude Include="..\..\include\MyGraphics3.h" />
     <ClInclude Include="..\..\include\Plane.h" />
     <ClInclude Include="..\..\include\Raycaster.h" />
     <ClInclude Include="..\..\include\Scene.h" />

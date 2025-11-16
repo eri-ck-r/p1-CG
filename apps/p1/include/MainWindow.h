@@ -64,7 +64,7 @@ private:
 	float _radius;
 	float _speed;
 	float _cameraSpeed = 1.0f;
-	bool _animate{ true };
+	bool _animate{ false };
 	bool _showGround{ true };
 
 	// Overridden method examples
