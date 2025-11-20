@@ -12,7 +12,7 @@ namespace cg
 {
     struct Scene : public SharedObject
     {
-        List<Reference<Actor>> actors;
+        List<Reference<Actor3>> actors;
         List<Reference<Light>> lights;
         Color backgroundColor;
         Color ambientLight;
