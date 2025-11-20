@@ -34,7 +34,9 @@
 #define __MainWindow_h
 
 #include "graphics/GLRenderWindow3.h"
-#include "../include/Raycaster.h"
+#include "graphics/GLRenderer.h"
+#include "Raycaster.h"
+#include "MyRenderer.h"
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -47,16 +49,17 @@ public:
 
 	void createSphere(vec3f pos, float radius)
 	{
-		Reference<Sphere> newSphere = Sphere::makeUse(new Sphere(vec3f::null(), 1.0f));
+		Reference<Sphere> newSphere = Sphere::makeUse(new Sphere());
 		newSphere->setTransform(pos, quatf::identity(), vec3f{ 1.0f,1.0f,1.0f } * radius);
-		Reference<Actor> newActor = Actor::makeUse(new Actor(*newSphere, *g3()->sphere()));
+		Reference<Actor3> newActor = Actor3::makeUse(new Actor3(*newSphere, *g3()->sphere()));
 		_scene->actors.add(newActor);
 	}
+
 private:
 	using Base = cg::GLRenderWindow3;
 
 	Reference<Scene> _scene;
-
+	Reference<MyRenderer> _renderer;
 	Raycaster rc;
 	// Attribute examples
 	cg::Color _lineColor;
@@ -79,12 +82,12 @@ private:
 
 
 	//gui helper methods and attributes
-	Reference<Actor> currentSelectedActor;
+	Reference<Actor3> currentSelectedActor;
 	float _objectRadius = 1;
 	vec3f _objectScale;
 	vec3f _objectPosition;
 
-	float _objectCreationDistance = 5;
+	float _objectCreationDistance = 10;
 	void updateActorGUI();
 	void updateActor();
 	void removeActor();
