@@ -93,7 +93,7 @@ public:
 	void createLight(const vec3f& position, const Color& color);
 
 	/**
-	* @brief Creates a Sphere Actor; No rotation required.
+	* @brief Creates a Sphere Actor3; No rotation required.
 	*
 	* @param center -- Center coordinates
 	* @param radius -- Sphere radius
@@ -106,7 +106,7 @@ public:
 		const vec3f& scale = { 1.0f, 1.0f, 1.0f });
 
 	/**
-	* @brief Creates a Square plane Actor;
+	* @brief Creates a Square plane Actor3;
 	*
 	* @param P -- Point which plane passes through
 	* @param angles -- Euler angles in radians in z, x and y order
@@ -125,7 +125,7 @@ public:
 	*/
 	ray3f makeRay(int i, int j);
 
-	bool shoot(ray3f ray, Intersection& inter);
+	bool shoot(ray3f ray, IntersectionInfo& inter);
 
 	void render();
 
