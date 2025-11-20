@@ -6,9 +6,15 @@
 class Sphere : public Shape3
 {
 private:
-	vec3f _center;
-	float _radius;
+	vec3f _center = { 0.0f, 0.0f, 0.0f };
+	float _radius = 1.0f;
 public:
+
+	Sphere()
+	{
+		// do nothing;
+	}
+
 	Sphere(vec3f center, float radius) :
 		_center(center.versor()), _radius(radius)
 	{
