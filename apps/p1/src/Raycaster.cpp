@@ -31,12 +31,12 @@ Reference<Plane> Raycaster::createPlane(const vec3f& P, const vec3f& angles, con
 /**
 * @brief Creates and insert an actor into the scene
 *
-* @param shape -- Actor's shape
-* @param material -- Actor's material
+* @param shape -- Actor3's shape
+* @param material -- Actor3's material
 */
 void Raycaster::createActor(Shape3* shape, Material* material)
 {
-	//Reference<Actor> actor = Actor::makeUse(new Actor(*shape));
+	//Reference<Actor3> actor = Actor3::makeUse(new Actor3(*shape));
 	//actor->setMaterial(*material);
 	//_scene->actors.add(actor);
 }
@@ -97,7 +97,7 @@ void Raycaster::createLight(const vec3f& position, const Color& color)
 
 
 /**
-* @brief Creates a Sphere Actor; No rotation required.
+* @brief Creates a Sphere Actor3; No rotation required.
 *
 * @param center -- Center coordinates
 * @param radius -- Sphere radius
@@ -113,7 +113,7 @@ void Raycaster::createSphereActor(const vec3f& center,
 }
 
 /**
-* @brief Creates a Square plane Actor;
+* @brief Creates a Square plane Actor3;
 *
 * @param P -- Point which plane passes through
 * @param angles -- Euler angles in radians in z, x and y order
@@ -151,7 +151,7 @@ Color Raycaster::shade(ray3f& pixelRay)
 {
 	Color c = _scene->backgroundColor;
 	
-	Intersection inter;
+	IntersectionInfo inter;
 
 	// if the ray intersected any actor
 	if (shoot(pixelRay, inter))
@@ -217,7 +217,7 @@ ray3f Raycaster::makeRay(int i, int j)
 	return ray3f{ _camera->position(), p };
 }
 
-bool Raycaster::shoot(ray3f ray, Intersection& inter)
+bool Raycaster::shoot(ray3f ray, IntersectionInfo& inter)
 {
 	if (_scene->actors.empty())
 	{
@@ -225,7 +225,7 @@ bool Raycaster::shoot(ray3f ray, Intersection& inter)
 		return false;
 	}
 	float minDistance = std::numeric_limits<float>::max();
-	Reference<Actor> closestActor = *(_scene->actors.begin());
+	Reference<Actor3> closestActor = *(_scene->actors.begin());
 	for (auto actor : _scene->actors)
 	{
 		float t;
