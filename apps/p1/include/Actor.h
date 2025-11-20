@@ -1,5 +1,5 @@
-#ifndef __Actor_h
-#define __Actor_h
+#ifndef __Actor3_h
+#define __Actor3_h
 
 #include "core/SharedObject.h"
 #include "graphics/Material.h"
@@ -8,7 +8,7 @@
 
 namespace cg {
 
-    class Actor : public SharedObject
+    class Actor3 : public SharedObject
     {
     private:
         Reference<Shape3> _shape;
@@ -18,7 +18,7 @@ namespace cg {
         mat3f _normal;
 
     public:
-        Actor(const Shape3& shape, const TriangleMesh& mesh) :
+        Actor3(const Shape3& shape, const TriangleMesh& mesh) :
             _shape{&shape},
             _mesh{&mesh},
             _material{Material::defaultMaterial()}
