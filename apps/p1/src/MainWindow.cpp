@@ -40,7 +40,6 @@
 MainWindow::MainWindow(int width, int height) :
 	Base{ "Ds template", width, height }
 {
-
 	// Put your code here. Example:
 	_lineColor = cg::Color::red;
 	_meshColor = cg::Color::blue;
@@ -62,7 +61,7 @@ MainWindow::initialize()
 	rc = Raycaster(width(), camera()->aspectRatio());
 	rc._scene = _scene;
 	rc._camera = camera();
-}
+} 
 
 void
 MainWindow::update()
@@ -197,7 +196,7 @@ bool
 MainWindow::onMouseLeftPress(int i, int j)
 {
 	auto ray = rc.makeRay(i, j);
-	Intersection inter;
+	IntersectionInfo inter;
 	if (rc.shoot(ray, inter))
 	{
 		std::cout << "acertouj" << '\n';

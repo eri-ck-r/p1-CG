@@ -13,18 +13,23 @@
   <ItemGroup>
     <ClCompile Include="..\..\Main.cpp" />
     <ClCompile Include="..\..\src\MainWindow.cpp" />
+    <ClCompile Include="..\..\src\MyRenderer.cpp" />
     <ClCompile Include="..\..\src\Raycaster.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\Actor.h" />
     <ClInclude Include="..\..\include\Intersection.h" />
     <ClInclude Include="..\..\include\MainWindow.h" />
-    <ClInclude Include="..\..\include\MyGraphics3.h" />
+    <ClInclude Include="..\..\include\MyRenderer.h" />
     <ClInclude Include="..\..\include\Plane.h" />
     <ClInclude Include="..\..\include\Raycaster.h" />
     <ClInclude Include="..\..\include\Scene.h" />
     <ClInclude Include="..\..\include\Shape3.h" />
     <ClInclude Include="..\..\include\Sphere.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\fragmentShader.frag" />
+    <None Include="..\..\src\vertexShader.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
