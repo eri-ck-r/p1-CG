@@ -1,19 +1,19 @@
-#ifndef __Intersection_h
-#define __Intersection_h
+#ifndef __IntersectionInfo_h
+#define __IntersectionInfo_h
 
 #include "Actor.h"
 
 using namespace cg;
 
 /**
-* @brief Intersection struct for ray casting
+* @brief IntersectionInfo struct for ray casting
 *
-* @param Reference<Actor> actor
+* @param Reference<Actor3> actor
 * @param vec3f Interpoint;
 */
-struct Intersection
+struct IntersectionInfo
 {
-	Reference<Actor> actor;
+	Reference<Actor3> actor;
 	vec3f interPoint;	
 };
 
