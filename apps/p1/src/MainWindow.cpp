@@ -57,6 +57,9 @@ MainWindow::initialize()
 	glPolygonOffset(1.0f, 1.0f);
 
 	_scene =  Scene::makeUse(new Scene());
+	_renderer = MyRenderer::makeUse(new MyRenderer());
+	//_renderer->setCamera(camera());
+	
 
 	rc = Raycaster(width(), camera()->aspectRatio());
 	rc._scene = _scene;

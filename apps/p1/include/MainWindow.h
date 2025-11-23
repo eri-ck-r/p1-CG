@@ -60,6 +60,7 @@ private:
 
 	Reference<Scene> _scene;
 	Reference<MyRenderer> _renderer;
+
 	Raycaster rc;
 	// Attribute examples
 	cg::Color _lineColor;

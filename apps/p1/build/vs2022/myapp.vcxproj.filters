@@ -10,7 +10,7 @@
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
     <Filter Include="Source Files\Shaders">
-      <UniqueIdentifier>{e30c0658-9761-4366-b916-de410f9761f6}</UniqueIdentifier>
+      <UniqueIdentifier>{a90d12ca-d4a7-4168-bf44-2036b2052573}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -55,13 +55,5 @@
     <ClInclude Include="..\..\include\MyRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\src\fragmentShader.frag">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="..\..\src\vertexShader.vert">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
   </ItemGroup>
 </Project>
