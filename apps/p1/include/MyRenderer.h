@@ -97,10 +97,6 @@ namespace cg
         template <typename LightIterator>
         void setLights(LightIterator, LightIterator);
 
-        void setLineColor(const Color& color)
-        {
-            _program.setUniformVec4(_program.lineColorLoc, color);
-        }
 
         void setMaterial(const Material&, void* = nullptr);
 
@@ -144,19 +140,12 @@ namespace cg
             GLint viewportMatrixLoc;
             GLint projectionTypeLoc;
             GLint ambientLightLoc;
-            GLint useTextureLoc;
             GLint lightCountLoc;
             LightPropLoc lightLocs[maxLights];
             GLint OaLoc;
             GLint OdLoc;
             GLint OsLoc;
             GLint nsLoc;
-            GLint lineWidthLoc;
-            GLint lineColorLoc;
-            GLuint noMixIdx;
-            GLuint lineColorMixIdx;
-            GLuint modelMaterialIdx;
-            GLuint colorMapMaterialIdx;
 
             GLProgram();
 
@@ -193,12 +182,11 @@ namespace cg
     }; // MyRenderer
 
     template <typename LightIterator>
-    void
-        MyRenderer::setLights(LightIterator begin, LightIterator end)
+    void MyRenderer::setLights(LightIterator begin, LightIterator end)
     {
         _lightCount = 0;
         while (begin != end)
-            if (setLight(_lightCount, *begin++))
+            if (setLight(_lightCount, **begin++))
                 if (++_lightCount == maxLights)
                     break;
         _program.setUniform(_program.lightCountLoc, _lightCount);

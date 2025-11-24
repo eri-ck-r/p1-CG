@@ -71,9 +71,7 @@ Reference<Material> createMaterial(const float& r, const float& g, const float& 
 int
 main(int argc, char** argv)
 {
-	cg::Application{ new MainWindow(1024,768) }.run(argc, argv);
-
-
+	cg::Application{ new MainWindow(1600, 900) }.run(argc, argv);
 
 	return 0;
 }

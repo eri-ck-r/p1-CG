@@ -88,9 +88,8 @@ vec4 lightColor(int i, float d)
 	return lights[i].color * f;
 }
 
-vec4 phong(vec3 P, vec3 N)
+vec4 phong(vec3 P, vec3 N, MaterialProps m)
 {
-	MaterialProps m;
 	vec4 color;
 
 	color = ambientLight * m.Oa;
@@ -114,7 +113,6 @@ vec4 phong(vec3 P, vec3 N)
 		if (lightVector(i, P, L, d))
 		{
 			vec4 I = lightColor(i, d);
-
 			color += I * m.Od * max(dot(N, L), 0);
 			color += I * m.Os * pow(max(dot(R, L), 0), m.shine);
 		}
@@ -125,5 +123,5 @@ vec4 phong(vec3 P, vec3 N)
 
 void main()
 {
-	fragmentColor = phong(v_position, v_normal);
+	fragmentColor = phong(v_position, v_normal, material);
 }

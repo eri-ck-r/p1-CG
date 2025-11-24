@@ -52,7 +52,15 @@ public:
 		Reference<Sphere> newSphere = Sphere::makeUse(new Sphere());
 		newSphere->setTransform(pos, quatf::identity(), vec3f{ 1.0f,1.0f,1.0f } * radius);
 		Reference<Actor3> newActor = Actor3::makeUse(new Actor3(*newSphere, *g3()->sphere()));
+		newActor->setMaterial(*Material::makeUse(new Material(Color::gray)));
 		_scene->actors.add(newActor);
+	}
+
+	void createLight(vec3f pos)
+	{
+		Reference<Light> newLight = Light::makeUse(new Light());
+		newLight->setPosition(pos);
+		_scene->lights.add(newLight);
 	}
 
 private:
@@ -70,7 +78,7 @@ private:
 	float _cameraSpeed = 1.0f;
 	bool _animate{ false };
 	bool _showGround{ true };
-
+	Color _ambientLight;
 	// Overridden method examples
 	void initialize() override;
 	void update() override;
@@ -83,14 +91,21 @@ private:
 
 
 	//gui helper methods and attributes
-	Reference<Actor3> currentSelectedActor;
-	float _objectRadius = 1;
-	vec3f _objectScale;
-	vec3f _objectPosition;
-
+	Reference<Actor3> _currentActor;
+	class 
+	{
+	public:
+		float objectRadius = 1;
+		vec3f objectScale;
+		vec3f objectPosition;
+		Color color;
+	} actorProps;
+	
+	Reference<Light> _currentLight;
 	float _objectCreationDistance = 10;
+
 	void updateActorGUI();
-	void updateActor();
+	void updateActorShape();
 	void removeActor();
 }; // MainWindow
 

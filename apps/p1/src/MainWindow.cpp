@@ -38,7 +38,7 @@
 // MainWindow implementation
 // ==========
 MainWindow::MainWindow(int width, int height) :
-	Base{ "Ds template", width, height }
+	Base{ "P2/T1 CG", width, height }
 {
 	// Put your code here. Example:
 	_lineColor = cg::Color::red;
@@ -57,13 +57,17 @@ MainWindow::initialize()
 	glPolygonOffset(1.0f, 1.0f);
 
 	_scene =  Scene::makeUse(new Scene());
+
 	_renderer = MyRenderer::makeUse(new MyRenderer());
-	//_renderer->setCamera(camera());
-	
+	_renderer->setCamera(camera());
+	_renderer->begin();
 
 	rc = Raycaster(width(), camera()->aspectRatio());
 	rc._scene = _scene;
 	rc._camera = camera();
+
+	createSphere(vec3f::null(), 1.0f);
+	_currentActor = *_scene->actors.begin();
 } 
 
 void
@@ -84,18 +88,19 @@ MainWindow::renderScene()
 
 	auto g3 = this->g3();
 
-	g3->setLineColor(_lineColor);
-	g3->drawArc({ -4, 0, 0 }, // center
-		_radius, // radius
-		{ 1, 0, 0 }, // first point direction
-		{ 0, 0, 1 }, // normal
-		180); // angle
-	g3->setPolygonMode(GLGraphics3::LINE);
-	g3->drawCircle({ 0, 0, 0 }, // center
-		_radius, // radius
-		{ 0, 0, 1 }); // normal
-	g3->setPolygonMode(GLGraphics3::FILL);
-	g3->setMeshColor(_meshColor);
+	//g3->setLineColor(_lineColor);
+	//g3->drawArc({ -4, 0, 0 }, // center
+	//	_radius, // radius
+	//	{ 1, 0, 0 }, // first point direction
+	//	{ 0, 0, 1 }, // normal
+	//	180); // angle
+	//g3->setPolygonMode(GLGraphics3::LINE);
+	//g3->drawCircle({ 0, 0, 0 }, // center
+	//	_radius, // radius
+	//	{ 0, 0, 1 }); // normal
+	//g3->setPolygonMode(GLGraphics3::FILL);
+	//g3->setMeshColor(_meshColor);
+
 	/* aqui vai ter um for que vai percorrer todos os atores da cena
 	 entao as classes dos atores vão ter que ter a mesh deles tambem
 	 e fornecer a trs é claro
@@ -106,18 +111,18 @@ MainWindow::renderScene()
 
 	 entao acho que nesse drawMesh eu passo a trs e a trasnfrom vector
 	 */
+	_renderer->setLights(_scene->lights.begin(), _scene->lights.end());
+
 	for (auto actor : _scene->actors)
 	{
+		_renderer->setMaterial(*actor->material());
+
 		auto& trs = actor->shape()->localToWorldMatrix();
 		mat3f n(trs);
-		g3->drawMesh(*actor->mesh(),
+		_renderer->render(*actor->mesh(),
 			trs,
 			n);
 	}
-	g3->drawMesh(*g3->sphere(), // mesh
-		{ 4, 0, 0 }, // position
-		mat3f::identity(), // rotation
-		vec3f{ 1, 2, 1 } *_radius); // scale
 	if (_showGround)
 		g3->drawXZPlane(8, 1);
 }
@@ -136,6 +141,8 @@ MainWindow::keyInputEvent(int key, int action, int mods)
 			createSphere(camera()->position(), 1.0f);
 			std::cout << "aa";
 			return true;
+		case GLFW_KEY_R:
+			_renderer->updateShaders();
 		}
 
 	if (ImGui::GetIO().WantCaptureKeyboard || action == GLFW_RELEASE)
@@ -181,15 +188,20 @@ MainWindow::mouseButtonInputEvent(int button, int action, int mods)
 
 	if (action != GLFW_RELEASE && mods == GLFW_MOD_ALT)
 	{
+		int x, y;
+		cursorPosition(x, y);
+		auto mouseRay = rc.makeRay(x, y);
+
 		switch (button)
 		{
 		case GLFW_MOUSE_BUTTON_LEFT:
-			int x, y;
-			cursorPosition(x, y);
-			auto mouseRay = rc.makeRay(x, y);
 			createSphere(mouseRay(_objectCreationDistance), 1);
-
 			return true;
+		case GLFW_MOUSE_BUTTON_RIGHT:
+			createLight(mouseRay(_objectCreationDistance));
+			return true;
+		default:
+			return false;
 		}
 	}
 	return Base::mouseButtonInputEvent(button, action, mods);
@@ -198,12 +210,12 @@ MainWindow::mouseButtonInputEvent(int button, int action, int mods)
 bool
 MainWindow::onMouseLeftPress(int i, int j)
 {
-	auto ray = rc.makeRay(i, j);
+	auto mouseRay = rc.makeRay(i, j);
 	IntersectionInfo inter;
-	if (rc.shoot(ray, inter))
+	if (rc.shoot(mouseRay, inter))
 	{
 		std::cout << "acertouj" << '\n';
-		currentSelectedActor = inter.actor;
+		_currentActor = inter.actor;
 		//TODO tem que ter um update object aqui pra poder mudar tudo pra aparecer na GUI
 		// e ela nao resetar o objeto inteiro toda hora que ela aparece
 		updateActorGUI();
@@ -217,56 +229,104 @@ MainWindow::gui()
 {
 	// Put your gui code here. Example:
 	ImGui::SetNextWindowSize({ 420, 240 });
-	ImGui::Begin("Template GUI");
-	ImGui::ColorEdit3("Line Color", (float*)&_lineColor);
-	ImGui::ColorEdit3("Mesh Color", (float*)&_meshColor);
-	ImGui::Separator();
-	ImGui::Checkbox("Animate", &_animate);
-	ImGui::SliderFloat("Speed", &_speed, 0.001f, 0.01f);
-	ImGui::SliderFloat("Camera speed", &_cameraSpeed, 1.0f, 10.0f);
-	ImGui::SliderFloat("Object Creation distace", &_objectCreationDistance, 1.0f, 50.0f);
-	ImGui::Checkbox("Show Ground", &_showGround);
-	ImGui::Separator();
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-		deltaTime(),
-		ImGui::GetIO().Framerate);
+	ImGui::Begin("P2/T1 GUI");
+	{
+
+		ImGui::ColorEdit3("Line Color", (float*)&_lineColor);
+		ImGui::ColorEdit3("Mesh Color", (float*)&_meshColor);
+		if (ImGui::ColorEdit3("Ambient Light", (float*)&_ambientLight))
+			_renderer->setAmbientLight(_ambientLight);
+		ImGui::Separator();
+		ImGui::Checkbox("Animate", &_animate);
+		ImGui::SliderFloat("Speed", &_speed, 0.001f, 0.01f);
+		ImGui::SliderFloat("Camera speed", &_cameraSpeed, 1.0f, 10.0f);
+		ImGui::SliderFloat("Object Creation distace", &_objectCreationDistance, 1.0f, 50.0f);
+		ImGui::Checkbox("Show Ground", &_showGround);
+		ImGui::Separator();
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+			deltaTime(),
+			ImGui::GetIO().Framerate);
+	}
 	ImGui::End();
 
 	
 	ImGui::SetNextWindowSize({ 360, 180 });
 	ImGui::Begin("Object Inspector");
-	if (ImGui::InputFloat("Radius", &_objectRadius, 0.1f, 10.0f))
-		updateActor();
-	if (ImGui::SliderFloat3("Position", &_objectPosition.x, -20.0f, 20.0f))
-		updateActor();
-	if (ImGui::SliderFloat3("Scale", &_objectScale.x, -20.0f, 20.0f))
-		updateActor();
-	if (ImGui::Button("Modify"))
-		updateActor();
-	if (ImGui::Button("Delete"))
-		removeActor();
+	{
+		if (ImGui::InputFloat("Radius", &actorProps.objectRadius, 0.1f, 10.0f))
+			updateActorShape();
+		if (ImGui::SliderFloat3("Position", &actorProps.objectPosition.x, -20.0f, 20.0f))
+			updateActorShape();
+		if (ImGui::SliderFloat3("Scale", &actorProps.objectScale.x, -20.0f, 20.0f))
+			updateActorShape();
+		if (ImGui::Button("Modify"))
+			updateActorShape();
+		if (ImGui::Button("Delete"))
+			removeActor();
+	}
 	ImGui::End();
 
+	ImGui::SetNextWindowSize({ 360, 180 });
+	ImGui::Begin("Object Material");
+	{
+		if (ImGui::ColorEdit3("Color", (float*)&actorProps.color))
+		{
+			_currentActor->material()->ambient = actorProps.color * 0.2f;
+			_currentActor->material()->diffuse = actorProps.color * 0.8f;
+		}
+		ImGui::ColorEdit3("Spot", (float*)&_currentActor->material()->spot);
+		ImGui::InputFloat("Shine", &_currentActor->material()->shine);
+		ImGui::ColorEdit3("Specular", (float*)&_currentActor->material()->specular);
+		ImGui::ColorEdit3("Transparency", (float*)&_currentActor->material()->transparency);
+		ImGui::InputFloat("Index of Refraction", &_currentActor->material()->ior);
+	}
+	ImGui::End();
+
+	const char* previewName = (_currentLight == nullptr) ? "Select Light" : _currentLight->name();
+	if (ImGui::BeginCombo("Scene Lights", previewName))
+	{
+		for (Reference<Light> light : _scene->lights)
+		{
+			bool isSelected = (_currentLight == light);
+			ImGui::PushID(light);
+			if (ImGui::Selectable(light->name(), isSelected))
+				_currentLight = light;
+			if (isSelected)
+				ImGui::SetItemDefaultFocus();
+			ImGui::PopID();
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::Separator();
+
+	if (_currentLight != nullptr)
+	{
+		ImGui::Text(_currentLight->name());
+
+	}
 }
 
 void MainWindow::updateActorGUI()
 {
-	auto& trs = currentSelectedActor->shape()->localToWorldMatrix();
-	_objectPosition = vec3f(trs[3]);
+	auto& trs = _currentActor->shape()->localToWorldMatrix();
+	actorProps.objectPosition = vec3f(trs[3]);
 	auto scaleX = trs[0].length();
 	auto scaleY = trs[1].length();
 	auto scaleZ = trs[2].length();
-	_objectScale = vec3f{ scaleX, scaleY, scaleZ };
+	actorProps.objectScale = vec3f{ scaleX, scaleY, scaleZ };
+
+	actorProps.color = _currentActor->material()->ambient * 5.0f;
+
 }
 
-void MainWindow::updateActor()
+void MainWindow::updateActorShape()
 {
 	std::cout << "atualizei kkkk" << '\n';
-	currentSelectedActor->shape()->setTransform(_objectPosition, quatf::identity(), vec3f{ 1.0f, 1.0f, 1.0f } * _objectRadius);
+	_currentActor->shape()->setTransform(actorProps.objectPosition, quatf::identity(), vec3f{ 1.0f, 1.0f, 1.0f } * actorProps.objectRadius);
 	updateActorGUI();
 }
 
 inline void MainWindow::removeActor()
 {
-	_scene->actors.remove(currentSelectedActor);
+	_scene->actors.remove(_currentActor);
 }

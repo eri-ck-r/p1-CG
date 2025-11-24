@@ -18,6 +18,11 @@ namespace cg
 		return camera.worldToCameraMatrix().transform3x4(light.position());
 	}
 
+	void MyRenderer::setMaterial(const Material& material, void* texture)
+	{
+		_program.renderMaterial(material);
+	}
+
 	inline void MyRenderer::GLProgram::initUniformLightLocations(int i)
 	{
 		lightLocs[i].type = uniformLightLocation(i, "type");
@@ -43,16 +48,6 @@ namespace cg
 		OdLoc = uniformLocation("material.Od");
 		OsLoc = uniformLocation("material.Os");
 		nsLoc = uniformLocation("material.shine");
-		lineWidthLoc = uniformLocation("line.width");
-		lineColorLoc = uniformLocation("line.color");
-	}
-
-	inline void MyRenderer::GLProgram::initSubroutineIndices()
-	{
-		noMixIdx = fragmentSubroutineIndex("noMix");
-		lineColorMixIdx = fragmentSubroutineIndex("lineColorMix");
-		modelMaterialIdx = fragmentSubroutineIndex("modelMaterial");
-		colorMapMaterialIdx = fragmentSubroutineIndex("colorMapMaterial");
 	}
 
 
@@ -60,7 +55,6 @@ namespace cg
 	{
 		loadShaders("vertexShader.vert", "fragmentShader.frag").use();
 		initUniformLocations();
-		initSubroutineIndices();
 	}
 
 	MyRenderer::GLProgram::GLProgram() :
@@ -69,8 +63,6 @@ namespace cg
 		auto cp = GLSL::Program::current();
 
 		initProgram();
-		setUniform(lineWidthLoc, 0.5f);
-		setUniformVec4(lineColorLoc, Color::gray);
 		setUniformVec4(ambientLightLoc, Color::darkGray);
 		renderMaterial(*Material::defaultMaterial());
 		GLSL::Program::setCurrent(cp);
@@ -114,16 +106,14 @@ namespace cg
 		setUniform(lightCountLoc, 1);
 	}
 
-	bool
-		MyRenderer::setLight(int i, const Light& light)
+	bool MyRenderer::setLight(int i, const Light& light)
 	{
 		return light.isTurnedOn() ?
 			void(_program.renderLight(i, light, *camera())), true : false;
 	}
 
 
-	inline void
-		MyRenderer::updateView()
+	inline void MyRenderer::updateView()
 	{
 		camera()->update();
 
@@ -140,8 +130,7 @@ namespace cg
 		_viewportMatrix[3].set(v[0] + w2, v[1] + h2, 0, 0);
 	}
 
-	void
-		MyRenderer::begin()
+	void MyRenderer::begin()
 	{
 		if (auto cp = GLSL::Program::current(); &_program != cp)
 		{
@@ -157,8 +146,7 @@ namespace cg
 		}
 	}
 
-	void
-		MyRenderer::end()
+	void MyRenderer::end()
 	{
 		if (auto cp = GLSL::Program::current(); &_program == cp)
 		{
@@ -222,6 +210,7 @@ namespace cg
 
 	void MyRenderer::updateShaders()
 	{
+		_program.disuse();
 		_program.loadShaders("vertexShader.vert", "fragmentShader.frag").use();
 	}
 
