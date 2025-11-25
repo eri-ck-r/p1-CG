@@ -48,7 +48,7 @@ namespace cg {
             return _material;
         }
 
-        TriangleMesh* mesh()
+        auto& mesh()
         {
             return _mesh;
         }

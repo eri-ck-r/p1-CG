@@ -44,15 +44,6 @@
 
 using namespace cg;
 
-inline static
-void writeColor(std::ostream& out, const cg::Color& c)
-{
-	int iR = (int)(255.999 * c.x);
-	int iG = (int)(255.999 * c.y);
-	int iB = (int)(255.999 * c.z);
-
-	out << iR << ' ' << iG << ' ' << iB << '\n';
-}
 
 /**
 * @brief Creates a material
@@ -71,7 +62,5 @@ Reference<Material> createMaterial(const float& r, const float& g, const float& 
 int
 main(int argc, char** argv)
 {
-	cg::Application{ new MainWindow(1600, 900) }.run(argc, argv);
-
-	return 0;
+	return cg::Application{ new MainWindow(1600, 900) }.run(argc, argv);
 }

@@ -13,7 +13,7 @@
 #include "Sphere.h"
 #include "Plane.h"
 #include "Intersection.h"
-
+#include "graphics/GLImage.h"
 using namespace cg;
 
 class Raycaster
@@ -24,7 +24,8 @@ private:
 	int _m;
 	int _n;
 	float aspectRatio;
-	std::ostream* _out;
+	ImageBuffer _imageBuffer;
+	Reference<GLImage> _image;
 
 	Reference<Sphere> createSphere(const vec3f&, const float, const vec3f&);
 
@@ -59,28 +60,18 @@ public:
 	*/
 	Raycaster(int width, float aspectRatio) :
 		_m(width), _n((int)(width / aspectRatio)),
-		aspectRatio(aspectRatio)
+		aspectRatio(aspectRatio),
+		_image(new GLImage{ _m, _n }),
+		_imageBuffer(_m, _n)
 	{
 		// do nothing
-	}
-
-	void writeHeader()
-	{
-		*_out << "P3\n" << _m << ' ' << _n << "\n255\n";
-	}
-
-	void writeColor(const cg::Color& c)
-	{
-		int iR = (int)(255.999 * c.x);
-		int iG = (int)(255.999 * c.y);
-		int iB = (int)(255.999 * c.z);
-
-		*_out << iR << ' ' << iG << ' ' << iB << '\n';
 	}
 
 	auto& scene() { return _scene; }
 
 	auto& camera() { return _camera; }
+
+	auto& image() { return _image; }
 
 	void createAxis(Material*, Material*, Material*, Material*, bool);
 

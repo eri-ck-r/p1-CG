@@ -87,44 +87,32 @@ MainWindow::renderScene()
 	using namespace cg;
 
 	auto g3 = this->g3();
-
-	//g3->setLineColor(_lineColor);
-	//g3->drawArc({ -4, 0, 0 }, // center
-	//	_radius, // radius
-	//	{ 1, 0, 0 }, // first point direction
-	//	{ 0, 0, 1 }, // normal
-	//	180); // angle
-	//g3->setPolygonMode(GLGraphics3::LINE);
-	//g3->drawCircle({ 0, 0, 0 }, // center
-	//	_radius, // radius
-	//	{ 0, 0, 1 }); // normal
-	//g3->setPolygonMode(GLGraphics3::FILL);
-	//g3->setMeshColor(_meshColor);
-
-	/* aqui vai ter um for que vai percorrer todos os atores da cena
-	 entao as classes dos atores vão ter que ter a mesh deles tambem
-	 e fornecer a trs é claro
-	 agora a parte dos materiais eu já não sei
-	 como q eu seleciono essa bosta de material porra
-	 entao obviamente o raycaster tem que conhecer sua mainwindow e
-	 vice versa
-
-	 entao acho que nesse drawMesh eu passo a trs e a trasnfrom vector
-	 */
-	_renderer->setLights(_scene->lights.begin(), _scene->lights.end());
-
-	for (auto actor : _scene->actors)
+	if (_openGLMode)
 	{
-		_renderer->setMaterial(*actor->material());
+		_renderer->setLights(_scene->lights.begin(), _scene->lights.end());
 
-		auto& trs = actor->shape()->localToWorldMatrix();
-		mat3f n(trs);
-		_renderer->render(*actor->mesh(),
-			trs,
-			n);
+		for (auto actor : _scene->actors)
+		{
+			_renderer->setMaterial(*actor->material());
+
+			auto& trs = actor->shape()->localToWorldMatrix();
+			mat3f n(trs);
+			_renderer->render(*actor->mesh(),
+				trs,
+				n);
+		}
+		if (_showGround)
+			g3->drawXZPlane(8, 1);
 	}
-	if (_showGround)
-		g3->drawXZPlane(8, 1);
+	else
+	{
+		rc.image()->draw(0, 0);
+		ImGui::SetNextWindowSize({ 180, 80 });
+		ImGui::Begin("OpenGL Mode");
+		if (ImGui::Button("Go back to OpenGL mode"))
+			_openGLMode = true;
+		ImGui::End();
+	}
 }
 
 bool
@@ -141,7 +129,8 @@ MainWindow::keyInputEvent(int key, int action, int mods)
 			createSphere(camera()->position(), 1.0f);
 			std::cout << "aa";
 			return true;
-		case GLFW_KEY_R:
+		case GLFW_KEY_S:
+			std::cout << "Shaders reloaded\n";
 			_renderer->updateShaders();
 		}
 
@@ -216,8 +205,6 @@ MainWindow::onMouseLeftPress(int i, int j)
 	{
 		std::cout << "acertouj" << '\n';
 		_currentActor = inter.actor;
-		//TODO tem que ter um update object aqui pra poder mudar tudo pra aparecer na GUI
-		// e ela nao resetar o objeto inteiro toda hora que ela aparece
 		updateActorGUI();
 		return true;
 	}
@@ -235,12 +222,15 @@ MainWindow::gui()
 		ImGui::ColorEdit3("Line Color", (float*)&_lineColor);
 		ImGui::ColorEdit3("Mesh Color", (float*)&_meshColor);
 		if (ImGui::ColorEdit3("Ambient Light", (float*)&_ambientLight))
+		{
+			_scene->ambientLight = _ambientLight;
 			_renderer->setAmbientLight(_ambientLight);
+		}
 		ImGui::Separator();
 		ImGui::Checkbox("Animate", &_animate);
 		ImGui::SliderFloat("Speed", &_speed, 0.001f, 0.01f);
 		ImGui::SliderFloat("Camera speed", &_cameraSpeed, 1.0f, 10.0f);
-		ImGui::SliderFloat("Object Creation distace", &_objectCreationDistance, 1.0f, 50.0f);
+		ImGui::SliderFloat("Object Creation distance", &_objectCreationDistance, 1.0f, 50.0f);
 		ImGui::Checkbox("Show Ground", &_showGround);
 		ImGui::Separator();
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
@@ -259,10 +249,16 @@ MainWindow::gui()
 			updateActorShape();
 		if (ImGui::SliderFloat3("Scale", &actorProps.objectScale.x, -20.0f, 20.0f))
 			updateActorShape();
-		if (ImGui::Button("Modify"))
-			updateActorShape();
 		if (ImGui::Button("Delete"))
 			removeActor();
+		if (ImGui::BeginMenu("Mesh"))
+		{
+			if (ImGui::MenuItem("Sphere"))
+				_currentActor->mesh() = GLGraphics3::sphere();
+			if (ImGui::MenuItem("Box"))
+				_currentActor->mesh() = GLGraphics3::box();
+			ImGui::EndMenu();
+		}
 	}
 	ImGui::End();
 
@@ -283,27 +279,61 @@ MainWindow::gui()
 	ImGui::End();
 
 	const char* previewName = (_currentLight == nullptr) ? "Select Light" : _currentLight->name();
-	if (ImGui::BeginCombo("Scene Lights", previewName))
+	ImGui::SetNextWindowSize({ 360,360 });
+	ImGui::Begin("Light Inspector");
 	{
-		for (Reference<Light> light : _scene->lights)
+		if(ImGui::BeginCombo("Scene Lights", previewName))
 		{
-			bool isSelected = (_currentLight == light);
-			ImGui::PushID(light);
-			if (ImGui::Selectable(light->name(), isSelected))
-				_currentLight = light;
-			if (isSelected)
-				ImGui::SetItemDefaultFocus();
-			ImGui::PopID();
+			for (Reference<Light> light : _scene->lights)
+			{
+				bool isSelected = (_currentLight == light);
+				ImGui::PushID(light);
+				if (ImGui::Selectable(light->name(), isSelected))
+				{
+					_currentLight = light;
+					_currentLightPosition = light->position();
+				}
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
+				ImGui::PopID();
+			}
+			ImGui::EndCombo();
 		}
-		ImGui::EndCombo();
-	}
-	ImGui::Separator();
+		ImGui::Separator();
 
-	if (_currentLight != nullptr)
+		if (_currentLight != nullptr)
+		{
+			ImGui::Text(_currentLight->name());
+			ImGui::ColorEdit3("Color", (float*)&_currentLight->color);
+			if (ImGui::SliderFloat3("Position", &_currentLightPosition.x, -20.0f, 20.0f))
+				_currentLight->setPosition(_currentLightPosition);
+			
+			ImGui::Separator();
+			ImGui::Text("FallOff");
+			if (ImGui::BeginMenu(falloffToString(_currentLight->falloff)))
+			{
+				if (ImGui::MenuItem("Constant"))
+					_currentLight->falloff = Light::Falloff::Constant;
+				if (ImGui::MenuItem("Linear"))
+					_currentLight->falloff = Light::Falloff::Linear;
+				if (ImGui::MenuItem("Quadratic"))
+					_currentLight->falloff = Light::Falloff::Quadratic;
+				ImGui::EndMenu();
+			}
+		}
+	}
+	if (ImGui::Button("Delete"))
+		_scene->lights.remove(_currentLight);
+	ImGui::End();
+
+	ImGui::SetNextWindowSize({ 80,80 });
+	ImGui::Begin("Raycast");
+	if (ImGui::Button("Render"))
 	{
-		ImGui::Text(_currentLight->name());
-
+		rc.render();
+		_openGLMode = false;
 	}
+	ImGui::End();
 }
 
 void MainWindow::updateActorGUI()
@@ -330,3 +360,4 @@ inline void MainWindow::removeActor()
 {
 	_scene->actors.remove(_currentActor);
 }
+

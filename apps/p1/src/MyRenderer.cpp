@@ -141,7 +141,7 @@ namespace cg
 			updateView();
 			_program.use();
 			_program.setUniformMat4(_program.viewportMatrixLoc, _viewportMatrix);
-			glPolygonMode(GL_FRONT_AND_BACK, (renderMode != Wireframe) + GL_LINE);
+			glPolygonMode(GL_FRONT_AND_BACK, renderMode == Wireframe ? GL_LINE : GL_FILL);
 			glEnable(GL_DEPTH_TEST);
 		}
 	}
@@ -210,8 +210,10 @@ namespace cg
 
 	void MyRenderer::updateShaders()
 	{
-		_program.disuse();
-		_program.loadShaders("vertexShader.vert", "fragmentShader.frag").use();
+		auto cp = GLSL::Program::current();
+		cp->disuse();
+		cp->loadShaders("vertexShader.vert", "fragmentShader.frag");
+		GLSL::Program::setCurrent(cp);
 	}
 
 } // end namespace cg

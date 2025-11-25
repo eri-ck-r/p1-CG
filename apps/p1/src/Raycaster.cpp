@@ -129,9 +129,6 @@ void Raycaster::createPlaneActor(const vec3f& P,
 
 void Raycaster::render()
 {
-	std::ofstream out{ "image.ppm" };
-	_out = &out;
-	*_out << "P3\n" << _m << ' ' << _n << "\n255\n";
 	Color rayColor;
 
 	for (int j = 0; j < _n; ++j)
@@ -141,10 +138,11 @@ void Raycaster::render()
 		{
 			auto pixelRay = makeRay(i, j);
 			rayColor = shade(pixelRay);
-
-			writeColor(rayColor);
+			_imageBuffer(i, j) = rayColor;
 		}
+		_image->setData(_imageBuffer);
 	}
+	_image->draw(0, 0);
 }
 
 Color Raycaster::shade(ray3f& pixelRay)
@@ -189,10 +187,16 @@ Color Raycaster::shade(ray3f& pixelRay)
 				c += inter.actor->material()->diffuse* lightColor* (shapeNormal.dot(lightRay.direction));
 				vec3f reflectionDirection = (-(lightRay.direction) - 2.0f * (shapeNormal.dot(-lightRay.direction) * shapeNormal)).versor();
 				// I = Os * Il * (-Rl * V)^ns -- Equação 4.10
-				c += inter.actor->material()->spot * lightColor * (float)pow(-(reflectionDirection.dot(pixelRay.direction)), 8);
+				c += inter.actor->material()->spot * lightColor * (float)pow(-(reflectionDirection.dot(pixelRay.direction)), inter.actor->material()->shine);
 			}
 		}
 	}
+	if (c.r > 1.0f)
+		c.r = 1.0f;
+	if (c.g > 1.0f)
+		c.g = 1.0f;
+	if (c.b > 1.0f)
+		c.b = 1.0f;
 	return c;
 }
 
@@ -208,8 +212,8 @@ ray3f Raycaster::makeRay(int i, int j)
 	camV = m[1];
 	camN = m[2];
 
-	float Xp = (((W * (i + 0.5f)) / (float)_m)) - (W / 2.0f);
-	float Yp = (H / 2.0f) - ((H / (float)_n) * (j + 0.5f));
+	float Xp = (((W * (i + 0.5f)) / (float)_m)) - (W * 0.5f);
+	float Yp = (H * 0.5f) - ((H / (float)_n) * (j + 0.5f));
 	float Zp = _camera->nearPlane();
 
 	vec3f p = (Xp * camU + Yp * camV - Zp * camN).versor();

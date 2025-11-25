@@ -37,7 +37,6 @@
 #include "graphics/GLRenderer.h"
 #include "Raycaster.h"
 #include "MyRenderer.h"
-
 /////////////////////////////////////////////////////////////////////
 //
 // MainWindow: template main window class
@@ -51,7 +50,7 @@ public:
 	{
 		Reference<Sphere> newSphere = Sphere::makeUse(new Sphere());
 		newSphere->setTransform(pos, quatf::identity(), vec3f{ 1.0f,1.0f,1.0f } * radius);
-		Reference<Actor3> newActor = Actor3::makeUse(new Actor3(*newSphere, *g3()->sphere()));
+		Reference<Actor3> newActor = Actor3::makeUse(new Actor3(*newSphere, *GLGraphics3::sphere()));
 		newActor->setMaterial(*Material::makeUse(new Material(Color::gray)));
 		_scene->actors.add(newActor);
 	}
@@ -59,10 +58,15 @@ public:
 	void createLight(vec3f pos)
 	{
 		Reference<Light> newLight = Light::makeUse(new Light());
+		newLight->setType(Light::Type::Point);
 		newLight->setPosition(pos);
 		_scene->lights.add(newLight);
 	}
 
+	void rayCasterRender()
+	{
+		rc.render();
+	}
 private:
 	using Base = cg::GLRenderWindow3;
 
@@ -78,6 +82,7 @@ private:
 	float _cameraSpeed = 1.0f;
 	bool _animate{ false };
 	bool _showGround{ true };
+	bool _openGLMode{ true };
 	Color _ambientLight;
 	// Overridden method examples
 	void initialize() override;
@@ -102,11 +107,25 @@ private:
 	} actorProps;
 	
 	Reference<Light> _currentLight;
+	vec3f _currentLightPosition;
 	float _objectCreationDistance = 10;
 
 	void updateActorGUI();
 	void updateActorShape();
 	void removeActor();
 }; // MainWindow
+
+static const char* falloffToString(Light::Falloff falloff)
+{
+	switch (falloff)
+	{
+	case Light::Falloff::Constant:
+		return "Constant";
+	case Light::Falloff::Linear:
+		return "Linear";
+	case Light::Falloff::Quadratic:
+		return "Quadratic";
+	}
+}
 
 #endif // __MainWindow_h
