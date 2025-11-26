@@ -27,6 +27,10 @@
     <ClInclude Include="..\..\include\Shape3.h" />
     <ClInclude Include="..\..\include\Sphere.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="fragmentShader.frag" />
+    <None Include="vertexShader.vert" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{619445A0-D2FF-4DA0-B852-1B7CCF28C127}</ProjectGuid>

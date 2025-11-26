@@ -144,23 +144,23 @@ vec4 BRDF(vec3 P, vec3 N, MaterialProps m)
 		if(lightVector(i, P, L, d))
 		{
 			vec4 lightColor = lightColor(i, d);
-			vec3 Hl = normalize(-L - V);
+			vec3 Hl = normalize(L - V);
 			vec4 interpolatedSpecular = interpolateColor(vec4(0.04), m.Os, m.metalFactor);
-			vec4 fresnel = interpolatedSpecular + (vec4(1) - interpolatedSpecular) * pow(1 - dot(-L, Hl), 5);
+			vec4 fresnel = interpolatedSpecular + (vec4(1) - interpolatedSpecular) * pow(1 - max(dot(-L, Hl), 0.0), 5);
 
-			float nDotL = dot(N, -L);
-			float nDotV = dot(N, -V);
+			float nDotL = max(dot(N, L), 0.0);
+			float nDotV = max(dot(N, -V), 0.0);
 			float k = pow(m.rugosity + 1, 2) / 8;
 
 			float g1 = nDotL / ( (nDotL * (1 - k)) + k);
 			float g2 = nDotV / ( (nDotV * (1 - k)) + k);
 			
 			float alpha = pow(m.rugosity, 2);
-			float microfacetNDF = alpha*alpha / ( PI * pow( pow(dot(N, Hl), 2) * (alpha*alpha - 1) + 1, 2));
+			float microfacetNDF = alpha*alpha / ( PI * pow( pow( max(dot(N, Hl), 0.0), 2) * (alpha*alpha - 1) + 1, 2));
 
 			vec4 specularBRDF = fresnel * (g1 * g2 * microfacetNDF) / (4 * nDotL * nDotV );
 			
-			color += lightColor * (diffuseBRDF + specularBRDF) * -nDotL;
+			color += lightColor * (diffuseBRDF + specularBRDF) * nDotL;
 		}
 	}
 

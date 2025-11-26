@@ -157,11 +157,13 @@ Color Raycaster::shade(ray3f& pixelRay)
 
 	if (shoot(pixelRay, inter))
 	{
-		c = inter.actor->material()->ambient;
+		Reference<Material> m = inter.actor->material();
+		c = m->ambient;
 		vec3f interPoint = inter.interPoint;
 		vec3f shapeNormal = inter.actor->shape()->normalAt(interPoint);
-		Color interpolatedDiffuse = (inter.actor->material()->diffuse + (Color::black - inter.actor->material()->diffuse) * inter.actor->metalFactor);
+		Color interpolatedDiffuse = (m->diffuse + (Color::black - m->diffuse) * inter.actor->metalFactor);
 		Color diffuseBRDF =  interpolatedDiffuse * math::inverse(math::pi<float>);
+
 		for (auto light : _scene->lights)
 		{
 			bool isOccluded = false;
@@ -189,20 +191,21 @@ Color Raycaster::shade(ray3f& pixelRay)
 				Color lightColor = light->lightColor(lightDistance);
 				vec3f halfWay = (lightDirection - pixelRay.direction).versor();
 
-				Color interpolatedSpecular = Color(0.04f, 0.04f, 0.04f) * (1 - inter.actor->metalFactor) + inter.actor->material()->specular * inter.actor->metalFactor;
-				Color fresnel = interpolatedSpecular + (Color::white - interpolatedSpecular) * pow(1 - lightDirection.dot(halfWay), 5);
+				Color interpolatedSpecular = Color(0.04f, 0.04f, 0.04f) * (1 - inter.actor->metalFactor) + m->specular * inter.actor->metalFactor;
+				Color fresnel = interpolatedSpecular + (Color::white - interpolatedSpecular) * pow(1 - max(lightDirection.dot(halfWay), 0.0f), 5);
 
-				float nDotL =  shapeNormal.dot(lightDirection);
-				float nDotV = -shapeNormal.dot(pixelRay.direction);
+				float nDotL =  max(shapeNormal.dot(lightDirection), 0.0f);
+				float nDotV = max(-shapeNormal.dot(pixelRay.direction), 0.0f);
 				float k = sqr(inter.actor->rugosity + 1) / 8; // compilador vai otimizar pois é divisão por potencia de 2
 				float g1 = nDotL / ( (nDotL * (1 - k)) + k);
 				float g2 = nDotV / ( (nDotV * (1 - k)) + k);
-				float microfacetNDF = pow(inter.actor->rugosity, 2) / ( pi<float> * sqr(sqr(shapeNormal.dot(halfWay)) * ( pow(inter.actor->rugosity, 4) - 1) + 1));
+				float microfacetNDF = pow(inter.actor->rugosity, 2) / ( pi<float> * sqr(sqr( max(shapeNormal.dot(halfWay), 0.0f)) * ( pow(inter.actor->rugosity, 4) - 1) + 1));
 
 				Color specularBRDF = fresnel * (g1 * g2 * microfacetNDF / (4 * nDotL * nDotV));
 
 				c += lightColor * (diffuseBRDF + specularBRDF) * nDotL;
 			}
+			c *= pi<float>;
 		}
 		
 	}
