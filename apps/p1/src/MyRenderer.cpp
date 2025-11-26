@@ -18,9 +18,9 @@ namespace cg
 		return camera.worldToCameraMatrix().transform3x4(light.position());
 	}
 
-	void MyRenderer::setMaterial(const Material& material, void* texture)
+	void MyRenderer::setMaterial(const Material& material, const Actor3* actor)
 	{
-		_program.renderMaterial(material);
+		_program.renderMaterial(material, actor);
 	}
 
 	inline void MyRenderer::GLProgram::initUniformLightLocations(int i)
@@ -36,10 +36,10 @@ namespace cg
 
 	inline void MyRenderer::GLProgram::initUniformLocations()
 	{
+		modeLoc = uniformLocation("mode");
 		mvMatrixLoc = uniformLocation("mvMatrix");
 		normalMatrixLoc = uniformLocation("normalMatrix");
 		mvpMatrixLoc = uniformLocation("mvpMatrix");
-		projectionTypeLoc = uniformLocation("projectionType");
 		ambientLightLoc = uniformLocation("ambientLight");
 		lightCountLoc = uniformLocation("lightCount");
 		for (auto i = 0; i < maxLights; ++i)
@@ -48,6 +48,8 @@ namespace cg
 		OdLoc = uniformLocation("material.Od");
 		OsLoc = uniformLocation("material.Os");
 		nsLoc = uniformLocation("material.shine");
+		rugosityLoc = uniformLocation("material.rugosity");
+		metalFactorLoc = uniformLocation("material.metalFactor");
 	}
 
 
@@ -64,7 +66,7 @@ namespace cg
 
 		initProgram();
 		setUniformVec4(ambientLightLoc, Color::darkGray);
-		renderMaterial(*Material::defaultMaterial());
+		//renderMaterial(*Material::defaultMaterial());
 		GLSL::Program::setCurrent(cp);
 	}
 
@@ -76,12 +78,14 @@ namespace cg
 	}
 
 
-	void MyRenderer::GLProgram::renderMaterial(const Material& material)
+	void MyRenderer::GLProgram::renderMaterial(const Material& material, const Actor3* actor)
 	{
 		setUniformVec4(OaLoc, material.ambient);
 		setUniformVec4(OdLoc, material.diffuse);
-		setUniformVec4(OsLoc, material.spot);
+		setUniformVec4(OsLoc, material.specular);
 		setUniform(nsLoc, material.shine);
+		setUniform(rugosityLoc, actor->rugosity);
+		setUniform(metalFactorLoc, actor->metalFactor);
 	}
 
 	void MyRenderer::GLProgram::renderLight(int i,
@@ -193,7 +197,7 @@ namespace cg
 		_program.setUniformMat4(_program.mvMatrixLoc, mv);
 		_program.setUniformMat4(_program.mvpMatrixLoc, mvpMatrix(mv, camera));
 		_program.setUniformMat3(_program.normalMatrixLoc, normalMatrix(n, camera));
-
+		_program.setUniform(_program.modeLoc, 1);
 		auto m = glMesh(&mesh);
 
 		m->bind();

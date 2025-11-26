@@ -57,6 +57,7 @@ MainWindow::initialize()
 	glPolygonOffset(1.0f, 1.0f);
 
 	_scene =  Scene::makeUse(new Scene());
+	_scene->backgroundColor = _backgroundColor;
 
 	_renderer = MyRenderer::makeUse(new MyRenderer());
 	_renderer->setCamera(camera());
@@ -93,7 +94,7 @@ MainWindow::renderScene()
 
 		for (auto actor : _scene->actors)
 		{
-			_renderer->setMaterial(*actor->material());
+			_renderer->setMaterial(*actor->material(), actor);
 
 			auto& trs = actor->shape()->localToWorldMatrix();
 			mat3f n(trs);
@@ -131,7 +132,7 @@ MainWindow::keyInputEvent(int key, int action, int mods)
 			return true;
 		case GLFW_KEY_S:
 			std::cout << "Shaders reloaded\n";
-			_renderer->updateShaders();
+			//_renderer->updateShaders();
 		}
 
 	if (ImGui::GetIO().WantCaptureKeyboard || action == GLFW_RELEASE)
@@ -226,6 +227,8 @@ MainWindow::gui()
 			_scene->ambientLight = _ambientLight;
 			_renderer->setAmbientLight(_ambientLight);
 		}
+		if (ImGui::ColorEdit3("Background Color", (float*)&_backgroundColor))
+			_scene->backgroundColor = _backgroundColor;
 		ImGui::Separator();
 		ImGui::Checkbox("Animate", &_animate);
 		ImGui::SliderFloat("Speed", &_speed, 0.001f, 0.01f);
@@ -262,19 +265,18 @@ MainWindow::gui()
 	}
 	ImGui::End();
 
-	ImGui::SetNextWindowSize({ 360, 180 });
+	ImGui::SetNextWindowSize({ 360, 240 });
 	ImGui::Begin("Object Material");
 	{
-		if (ImGui::ColorEdit3("Color", (float*)&actorProps.color))
-		{
-			_currentActor->material()->ambient = actorProps.color * 0.2f;
-			_currentActor->material()->diffuse = actorProps.color * 0.8f;
-		}
+		ImGui::ColorEdit3("Ambient", (float*)&_currentActor->material()->ambient);
+		ImGui::ColorEdit3("Diffuse", (float*)&_currentActor->material()->diffuse);
 		ImGui::ColorEdit3("Spot", (float*)&_currentActor->material()->spot);
 		ImGui::InputFloat("Shine", &_currentActor->material()->shine);
 		ImGui::ColorEdit3("Specular", (float*)&_currentActor->material()->specular);
 		ImGui::ColorEdit3("Transparency", (float*)&_currentActor->material()->transparency);
 		ImGui::InputFloat("Index of Refraction", &_currentActor->material()->ior);
+		ImGui::SliderFloat("Rugosity", &_currentActor->rugosity, 0.0f, 1.0f);
+		ImGui::SliderFloat("Metal Factor", &_currentActor->metalFactor, 0.0f, 1.0f);
 	}
 	ImGui::End();
 

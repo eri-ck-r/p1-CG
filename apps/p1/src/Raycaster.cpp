@@ -138,38 +138,39 @@ void Raycaster::render()
 		{
 			auto pixelRay = makeRay(i, j);
 			rayColor = shade(pixelRay);
-			_imageBuffer(i, j) = rayColor;
+			_imageBuffer(i, -j + _n - 1) = rayColor;
 		}
 		_image->setData(_imageBuffer);
 	}
 	_image->draw(0, 0);
 }
 
+
+
 Color Raycaster::shade(ray3f& pixelRay)
 {
+	using namespace cg::math;
+
 	Color c = _scene->backgroundColor;
 	
 	IntersectionInfo inter;
 
-	// if the ray intersected any actor
 	if (shoot(pixelRay, inter))
 	{
 		c = inter.actor->material()->ambient;
-		// iluminaçao = Cd*Cl*(-N*Ll)
-		// onde Cd = cor do material difuso, Cl = cor da luz(tem que calcular o falloff, N = normal
-		// e Ll a direção do raio de luz ( é o lightray)
 		vec3f interPoint = inter.interPoint;
+		vec3f shapeNormal = inter.actor->shape()->normalAt(interPoint);
+		Color interpolatedDiffuse = (inter.actor->material()->diffuse + (Color::black - inter.actor->material()->diffuse) * inter.actor->metalFactor);
+		Color diffuseBRDF =  interpolatedDiffuse * math::inverse(math::pi<float>);
 		for (auto light : _scene->lights)
 		{
 			bool isOccluded = false;
-			vec3f shapeNormal = inter.actor->shape()->normalAt(interPoint);
 
 			vec3f lightDirection = light->position() - interPoint;
-			ray3f lightRay{ interPoint + (shapeNormal * 1e-3f), (lightDirection).versor() };
 			float lightDistance = lightDirection.length();
+			lightDirection *= inverse(lightDistance);
+			ray3f lightRay{ interPoint + (shapeNormal * 1e-3f), lightDirection };
 
-			//float smoothStep = math::abs(3*lightDistance*lightDistance - 2*math::cube(lightDistance));
-			Color lightColor = light->lightColor(lightDistance);
 
 			for (auto shadowActor : _scene->actors)
 			{
@@ -178,18 +179,32 @@ Color Raycaster::shade(ray3f& pixelRay)
 					math::isNegative(shadowInterPoint - lightDistance))
 				{
 					isOccluded = true;
+					break;
 				}
 			}
 
 			if (!isOccluded)
-			{
-				// I =  Od * Il * (N*Ll) -- Equação 4.8
-				c += inter.actor->material()->diffuse* lightColor* (shapeNormal.dot(lightRay.direction));
-				vec3f reflectionDirection = (-(lightRay.direction) - 2.0f * (shapeNormal.dot(-lightRay.direction) * shapeNormal)).versor();
-				// I = Os * Il * (-Rl * V)^ns -- Equação 4.10
-				c += inter.actor->material()->spot * lightColor * (float)pow(-(reflectionDirection.dot(pixelRay.direction)), inter.actor->material()->shine);
+			{ 
+
+				Color lightColor = light->lightColor(lightDistance);
+				vec3f halfWay = (lightDirection - pixelRay.direction).versor();
+
+				Color interpolatedSpecular = Color(0.04f, 0.04f, 0.04f) * (1 - inter.actor->metalFactor) + inter.actor->material()->specular * inter.actor->metalFactor;
+				Color fresnel = interpolatedSpecular + (Color::white - interpolatedSpecular) * pow(1 - lightDirection.dot(halfWay), 5);
+
+				float nDotL =  shapeNormal.dot(lightDirection);
+				float nDotV = -shapeNormal.dot(pixelRay.direction);
+				float k = sqr(inter.actor->rugosity + 1) / 8; // compilador vai otimizar pois é divisão por potencia de 2
+				float g1 = nDotL / ( (nDotL * (1 - k)) + k);
+				float g2 = nDotV / ( (nDotV * (1 - k)) + k);
+				float microfacetNDF = pow(inter.actor->rugosity, 2) / ( pi<float> * sqr(sqr(shapeNormal.dot(halfWay)) * ( pow(inter.actor->rugosity, 4) - 1) + 1));
+
+				Color specularBRDF = fresnel * (g1 * g2 * microfacetNDF / (4 * nDotL * nDotV));
+
+				c += lightColor * (diffuseBRDF + specularBRDF) * nDotL;
 			}
 		}
+		
 	}
 	if (c.r > 1.0f)
 		c.r = 1.0f;
@@ -234,13 +249,10 @@ bool Raycaster::shoot(ray3f ray, IntersectionInfo& inter)
 	{
 		float t;
 
-		if (actor->shape()->intersect(ray, t))
+		if (actor->shape()->intersect(ray, t) && t < minDistance)
 		{
-			if (t < minDistance)
-			{ 
-				minDistance = t;
-				closestActor = actor;
-			}
+			minDistance = t;
+			closestActor = actor;
 		}
 	}
 	

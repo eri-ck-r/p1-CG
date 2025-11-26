@@ -41,7 +41,7 @@
 #include "graphics/GLGraphics3.h"
 #include "graphics/Light.h"
 #include "graphics/Material.h"
-
+#include "../include/Actor.h"
 namespace cg
 { // begin namespace cg
 
@@ -98,7 +98,7 @@ namespace cg
         void setLights(LightIterator, LightIterator);
 
 
-        void setMaterial(const Material&, void* = nullptr);
+        void setMaterial(const Material&, const Actor3* actor);
 
         void render(TriangleMesh&, const mat4f&, const mat3f&);
         void render(TriangleMesh&, const vec3f&, const mat3f&, const vec3f&);
@@ -133,12 +133,11 @@ namespace cg
                 GLint range;
                 GLint angle;
             };
-
+            GLint modeLoc;
             GLint mvMatrixLoc;
             GLint normalMatrixLoc;
             GLint mvpMatrixLoc;
             GLint viewportMatrixLoc;
-            GLint projectionTypeLoc;
             GLint ambientLightLoc;
             GLint lightCountLoc;
             LightPropLoc lightLocs[maxLights];
@@ -146,10 +145,12 @@ namespace cg
             GLint OdLoc;
             GLint OsLoc;
             GLint nsLoc;
+            GLint rugosityLoc;
+            GLint metalFactorLoc;
 
             GLProgram();
 
-            void renderMaterial(const Material&);
+            void renderMaterial(const Material&, const Actor3* actor);
             void renderLight(int, const Light&, const Camera&);
             void renderDefaultLights();
 

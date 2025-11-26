@@ -16,12 +16,16 @@ namespace cg {
         Reference<TriangleMesh> _mesh;
         mat4f _transform;
         mat3f _normal;
-
     public:
+        float rugosity;
+        float metalFactor;
+
         Actor3(const Shape3& shape, const TriangleMesh& mesh) :
-            _shape{&shape},
-            _mesh{&mesh},
-            _material{Material::defaultMaterial()}
+            _shape{ &shape },
+            _mesh{ &mesh },
+            _material{ Material::defaultMaterial() },
+            rugosity{ 0.5f },
+            metalFactor{ 0.5f }
         {
             // do nothing
         }

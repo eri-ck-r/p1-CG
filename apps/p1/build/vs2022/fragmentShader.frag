@@ -1,5 +1,7 @@
 #version 400
 
+#define PI 3.1415926535897
+
 struct LightProps
 {
 	int type; // DIRECTIONAL/POINT/SPOT
@@ -17,6 +19,8 @@ struct MaterialProps
 	vec4 Od; // diffuse color
 	vec4 Os; // specular spot color
 	float shine; // specular shininess exponent
+	float rugosity; // rugosity factor
+	float metalFactor; // metal factor
 };
 
 
@@ -25,7 +29,7 @@ in vec3 v_position;
 in vec3 v_normal;
 in vec4 v_color;
 
-uniform int projectionType; // PERSPECTIVE/PARALLEL
+uniform int mode;
 uniform vec4 ambientLight;
 uniform int lightCount;
 uniform LightProps lights[8];
@@ -94,11 +98,7 @@ vec4 phong(vec3 P, vec3 N, MaterialProps m)
 
 	color = ambientLight * m.Oa;
 
-	vec3 V = projectionType == 0 ?
-		// PERSPECTIVE
-		normalize(P) :
-		// PARALLEL
-		vec3(0, 0, -1);
+	vec3 V = normalize(P);
 
 	if (dot(N, V) > 0)
 		//return backFaceColor;
@@ -120,8 +120,58 @@ vec4 phong(vec3 P, vec3 N, MaterialProps m)
 	return min(color, vec4(1));
 }
 
+vec4 interpolateColor(vec4 min, vec4 max, float t)
+{
+	return min + (max - min)*t;
+}
+
+vec4 BRDF(vec3 P, vec3 N, MaterialProps m)
+{
+	vec4 color;
+
+	
+	
+	vec3 V = normalize(P);
+
+	if(dot(N,V) > 0)
+		N *= -1;
+
+	vec4 diffuseBRDF = interpolateColor(m.Od, vec4(0), m.metalFactor) / PI;
+	for(int i = 0; i < lightCount; i++)
+	{
+		vec3 L; float d;
+		
+		if(lightVector(i, P, L, d))
+		{
+			vec4 lightColor = lightColor(i, d);
+			vec3 Hl = normalize(-L - V);
+			vec4 interpolatedSpecular = interpolateColor(vec4(0.04), m.Os, m.metalFactor);
+			vec4 fresnel = interpolatedSpecular + (vec4(1) - interpolatedSpecular) * pow(1 - dot(-L, Hl), 5);
+
+			float nDotL = dot(N, -L);
+			float nDotV = dot(N, -V);
+			float k = pow(m.rugosity + 1, 2) / 8;
+
+			float g1 = nDotL / ( (nDotL * (1 - k)) + k);
+			float g2 = nDotV / ( (nDotV * (1 - k)) + k);
+			
+			float alpha = pow(m.rugosity, 2);
+			float microfacetNDF = alpha*alpha / ( PI * pow( pow(dot(N, Hl), 2) * (alpha*alpha - 1) + 1, 2));
+
+			vec4 specularBRDF = fresnel * (g1 * g2 * microfacetNDF) / (4 * nDotL * nDotV );
+			
+			color += lightColor * (diffuseBRDF + specularBRDF) * -nDotL;
+		}
+	}
+
+	return min(PI*color, vec4(1));
+}
 
 void main()
 {
-	fragmentColor = phong(v_position, v_normal, material);
+	fragmentColor = v_color;
+	if(mode == 1)
+		fragmentColor = BRDF(v_position, v_normal, material);
+	else
+		fragmentColor = phong(v_position, v_normal, material);
 }

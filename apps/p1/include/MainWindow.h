@@ -67,6 +67,7 @@ public:
 	{
 		rc.render();
 	}
+
 private:
 	using Base = cg::GLRenderWindow3;
 
@@ -84,6 +85,7 @@ private:
 	bool _showGround{ true };
 	bool _openGLMode{ true };
 	Color _ambientLight;
+	Color _backgroundColor{ 184,240,255 }; // Light blue
 	// Overridden method examples
 	void initialize() override;
 	void update() override;
