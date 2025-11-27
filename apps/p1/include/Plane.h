@@ -32,6 +32,10 @@ public:
         return localToWorldMatrix().transformVector(_N).versor();
     }
 
+    cg::Bounds3f bounds() const override
+    {
+        return cg::Bounds3f{};
+	}
 };
 
 #endif

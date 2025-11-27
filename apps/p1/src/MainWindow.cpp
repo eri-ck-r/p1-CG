@@ -56,11 +56,11 @@ void MainWindow::initializeMaterialList()
 	materials[3] = Material::makeUse(new Material{Color(0.53f, 0.52f, 0.50f)});
 	materials[4] = Material::makeUse(new Material{Color(1.00f, 0.84f, 0.00f)});
 
-    materials[0]->setName("Copper");
-    materials[1]->setName("Aluminum");
-    materials[2]->setName("Silver");
-    materials[3]->setName("Titanium");
-    materials[4]->setName("Gold");
+	materials[0]->specular = Color(0.95f, 0.64f, 0.54f); materials[0]->setName("Copper");
+    materials[1]->specular = Color(0.91f, 0.92f, 0.92f); materials[1]->setName("Aluminum");
+    materials[2]->specular = Color(0.95f, 0.93f, 0.88f); materials[2]->setName("Silver");
+    materials[3]->specular = Color(0.54f, 0.50f, 0.45f); materials[3]->setName("Titanium");
+    materials[4]->specular = Color(1.00f, 0.71f, 0.29f); materials[4]->setName("Gold");
 	
 	for (int i = 0; i < 5; i++)
 		materialList.add(materials[i]);
@@ -288,15 +288,24 @@ MainWindow::gui()
 	ImGui::SetNextWindowSize({ 360, 240 });
 	ImGui::Begin("Object Material");
 	{
-		ImGui::ColorEdit3("Ambient", (float*)&_currentActor->material()->ambient);
-		ImGui::ColorEdit3("Diffuse", (float*)&_currentActor->material()->diffuse);
+		if (ImGui::ColorEdit3("Color", (float*)&_currentActor->material()->diffuse))
+			_currentActor->material()->ambient = _currentActor->material()->diffuse * 0.2f;
 		ImGui::ColorEdit3("Spot", (float*)&_currentActor->material()->spot);
 		ImGui::InputFloat("Shine", &_currentActor->material()->shine);
 		ImGui::ColorEdit3("Specular", (float*)&_currentActor->material()->specular);
-		ImGui::ColorEdit3("Transparency", (float*)&_currentActor->material()->transparency);
-		ImGui::InputFloat("Index of Refraction", &_currentActor->material()->ior);
 		ImGui::SliderFloat("Rugosity", &_currentActor->rugosity, 0.0f, 1.0f);
 		ImGui::SliderFloat("Metal Factor", &_currentActor->metalFactor, 0.0f, 1.0f);
+		ImGui::Separator();
+
+		if (ImGui::BeginMenu("Material"))
+		{
+			if (ImGui::MenuItem("Sphere"))
+				_currentActor->mesh() = GLGraphics3::sphere();
+			if (ImGui::MenuItem("Box"))
+				_currentActor->mesh() = GLGraphics3::box();
+			ImGui::EndMenu();
+		}
+
 	}
 	ImGui::End();
 

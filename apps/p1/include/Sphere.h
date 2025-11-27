@@ -27,17 +27,15 @@ public:
 		vec3f newDirection = worldToLocalMatrix().transformVector(ray.direction);
 		ray3f newRay{ newPoint, newDirection.versor() };
 
-		//todo trocar isso por 1
-		float a = newRay.direction.dot(newRay.direction);
 		float b = 2.0f * newRay.direction.dot(newRay.origin);
 		float c = (newRay.origin).dot(newRay.origin) - _radius * _radius;
 
-		float delta = b * b - (4 * a * c);
+		float delta = b * b - (4 * c);
 		if (cg::math::isNegative(delta))
 			return false;
 
-		float t1 = (-1 * b + sqrt(delta)) / 2.0f * a;
-		float t2 = (-1 * b - sqrt(delta)) / 2.0f * a;
+		float t1 = (-1 * b + sqrt(delta)) / 2.0f;
+		float t2 = (-1 * b - sqrt(delta)) / 2.0f;
 		float tmin = std::numeric_limits<float>::max();
 
 		if (cg::math::isPositive(t1))
@@ -56,5 +54,12 @@ public:
 		return localToWorldMatrix().transformVector((newPoint - _center) * (1.0f / _radius)).versor();
 	}
 	
+	cg::Bounds3f bounds() const override
+	{
+		constexpr vec3f p0{ -1.0f, -1.0f, -1.0f };
+		constexpr vec3f p1{ 1.0f, 1.0f, 1.0f };
+		return cg::Bounds3f{ localToWorldMatrix().transform(p0), localToWorldMatrix().transform(p1)};
+	}
+
 };
 #endif // !__Sphere_h
