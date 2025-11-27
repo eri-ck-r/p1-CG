@@ -131,6 +131,20 @@ void Raycaster::render()
 {
 	Color rayColor;
 
+	/*
+	_bvh = nullptr;
+
+	std::vector<Reference<Shape3>> shapeVector;
+	for (auto actor : _scene->actors)
+	{
+
+		assert(actor != nullptr);
+		shapeVector.push_back(actor->shape());
+	}
+	// _bvh = BVH<Shape3>::makeUse(new BVH<Shape3>{ std::move(shapeVector) });
+	_bvh = new BVH<Shape3>{ std::move(shapeVector) };
+	*/
+
 	for (int j = 0; j < _n; ++j)
 	{
 		std::clog << "\rScanlines remaining: " << (_n - j) << ' ' << std::flush;
@@ -153,15 +167,16 @@ Color Raycaster::shade(ray3f& pixelRay)
 
 	Color c = _scene->backgroundColor;
 	
-	IntersectionInfo inter;
+	Intersection inter;
 
 	if (shoot(pixelRay, inter))
 	{
-		auto m = inter.actor->material();
+		Actor3* actor = (Actor3*)inter.object;
+		auto m = actor->material();
 		c = m->ambient * _scene->ambientLight;
-		vec3f interPoint = inter.interPoint;
-		vec3f shapeNormal = inter.actor->shape()->normalAt(interPoint);
-		Color interpolatedDiffuse = (m->diffuse + (Color::black - m->diffuse) * inter.actor->metalFactor);
+		vec3f interPoint = pixelRay(inter.distance);
+		vec3f shapeNormal = actor->shape()->normalAt(interPoint);
+		Color interpolatedDiffuse = (m->diffuse + (Color::black - m->diffuse) * actor->metalFactor);
 		Color diffuseBRDF =  interpolatedDiffuse * math::inverse(math::pi<float>);
 
 		for (auto light : _scene->lights)
@@ -191,15 +206,15 @@ Color Raycaster::shade(ray3f& pixelRay)
 				Color lightColor = light->lightColor(lightDistance);
 				vec3f halfWay = (lightDirection - pixelRay.direction).versor();
 
-				Color interpolatedSpecular = Color(0.04f, 0.04f, 0.04f) * (1 - inter.actor->metalFactor) + m->specular * inter.actor->metalFactor;
+				Color interpolatedSpecular = Color(0.04f, 0.04f, 0.04f) * (1 - actor->metalFactor) + m->specular * actor->metalFactor;
 				Color fresnel = interpolatedSpecular + (Color::white - interpolatedSpecular) * powf(1.0f - max(lightDirection.dot(halfWay), 0.01f), 5);
 
 				float nDotL =  max(shapeNormal.dot(lightDirection), 0.01f);
 				float nDotV = max(-shapeNormal.dot(pixelRay.direction), 0.01f);
-				float k = sqr(inter.actor->rugosity + 1) / 8; // compilador vai otimizar pois é divisão por potencia de 2
+				float k = sqr(actor->rugosity + 1) / 8; // compilador vai otimizar pois é divisão por potencia de 2
 				float g1 = nDotL / ( (nDotL * (1 - k)) + k);
 				float g2 = nDotV / ( (nDotV * (1 - k)) + k);
-				float microfacetNDF = powf(inter.actor->rugosity, 2) / ( pi<float> * sqr(sqr( max(shapeNormal.dot(halfWay), 0.1f)) * ( powf(inter.actor->rugosity, 4) - 1) + 1));
+				float microfacetNDF = powf(actor->rugosity, 2) / ( pi<float> * sqr(sqr( max(shapeNormal.dot(halfWay), 0.1f)) * ( powf(actor->rugosity, 4) - 1) + 1));
 
 				Color specularBRDF = fresnel * (g1 * g2 * microfacetNDF / (4 * nDotL * nDotV));
 
@@ -239,7 +254,7 @@ ray3f Raycaster::makeRay(int i, int j)
 	return ray3f{ _camera->position(), p };
 }
 
-bool Raycaster::shoot(ray3f ray, IntersectionInfo& inter)
+bool Raycaster::shoot(ray3f ray, Intersection& inter)
 {
 	if (_scene->actors.empty())
 	{
@@ -261,8 +276,8 @@ bool Raycaster::shoot(ray3f ray, IntersectionInfo& inter)
 	
 	if (minDistance != std::numeric_limits<float>::max())
 	{
-		inter.actor = closestActor;
-		inter.interPoint = ray(minDistance);
+		inter.object = closestActor;
+		inter.distance = minDistance;
 		return true;
 	}
 

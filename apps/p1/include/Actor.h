@@ -3,6 +3,7 @@
 
 #include "core/SharedObject.h"
 #include "graphics/Material.h"
+#include "graphics/PrimitiveMapper.h"
 
 #include "Shape3.h"
 
@@ -16,6 +17,8 @@ namespace cg {
         Reference<TriangleMesh> _mesh;
         mat4f _transform;
         mat3f _normal;
+    protected:
+      Reference<PrimitiveMapper> _mapper;
     public:
         float rugosity;
         float metalFactor;
@@ -55,6 +58,11 @@ namespace cg {
         auto& mesh()
         {
             return _mesh;
+        }
+
+        PrimitiveMapper* mapper() const
+        {
+          return _mapper;
         }
 
         //mat4f& transform() { return _transform; };

@@ -221,11 +221,11 @@ bool
 MainWindow::onMouseLeftPress(int i, int j)
 {
 	auto mouseRay = rc.makeRay(i, j);
-	IntersectionInfo inter;
+	Intersection inter;
 	if (rc.shoot(mouseRay, inter))
 	{
 		std::cout << "acertouj" << '\n';
-		_currentActor = inter.actor;
+		_currentActor = (Actor3*) inter.object;
 		updateActorGUI();
 		return true;
 	}

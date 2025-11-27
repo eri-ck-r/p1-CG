@@ -55,5 +55,6 @@ public:
 		vec3f newPoint = worldToLocalMatrix().transform(p);
 		return localToWorldMatrix().transformVector((newPoint - _center) * (1.0f / _radius)).versor();
 	}
+	
 };
 #endif // !__Sphere_h

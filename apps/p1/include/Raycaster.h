@@ -12,8 +12,9 @@
 #include "Actor.h"
 #include "Sphere.h"
 #include "Plane.h"
-#include "Intersection.h"
 #include "graphics/GLImage.h"
+#include "graphics/PrimitiveBVH.h"
+
 using namespace cg;
 
 class Raycaster
@@ -26,6 +27,7 @@ private:
 	float aspectRatio;
 	ImageBuffer _imageBuffer;
 	Reference<GLImage> _image;
+	// Reference<BVH<Shape3>> _bvh;
 
 	Reference<Sphere> createSphere(const vec3f&, const float, const vec3f&);
 
@@ -116,7 +118,7 @@ public:
 	*/
 	ray3f makeRay(int i, int j);
 
-	bool shoot(ray3f ray, IntersectionInfo& inter);
+	bool shoot(ray3f ray, Intersection& inter);
 
 	void render();
 

@@ -31,6 +31,7 @@ public:
     {
         return localToWorldMatrix().transformVector(_N).versor();
     }
+
 };
 
 #endif
