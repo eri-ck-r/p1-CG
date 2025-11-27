@@ -44,8 +44,8 @@ public:
 
   cg::Bounds3f bounds() const override
   {
-    constexpr vec3f p0{ -1.0f, 0, -1.0f };
-    constexpr vec3f p1{ 1.0f, 0.01, 1.0f };
+    constexpr vec3f p0{ -1.0f, 0.0f, -1.0f };
+    constexpr vec3f p1{ 1.0f, 0.01f, 1.0f };
     return cg::Bounds3f{ localToWorldMatrix().transform(p0), localToWorldMatrix().transform(p1) };
   }
 };
