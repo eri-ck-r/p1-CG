@@ -17,8 +17,6 @@ namespace cg {
         Reference<TriangleMesh> _mesh;
         mat4f _transform;
         mat3f _normal;
-    protected:
-      Reference<PrimitiveMapper> _mapper;
     public:
         float rugosity;
         float metalFactor;
@@ -45,7 +43,7 @@ namespace cg {
             _material = &material;
         }
 
-        Shape3* shape()
+        auto& shape()
         {
             return _shape;
         }
@@ -60,9 +58,25 @@ namespace cg {
             return _mesh;
         }
 
-        PrimitiveMapper* mapper() const
+        bool intersect(const ray3f& ray) const
         {
-          return _mapper;
+          cg::Intersection hit;
+          return intersect(ray, hit);
+        }
+
+        bool intersect(const ray3f& ray, cg::Intersection& hit) const
+        {
+          if (_shape->intersect(ray, hit))
+          {
+            hit.object = this;
+            return true;
+          }
+          return false;
+        }
+
+        cg::Bounds3f bounds() const
+        {
+          return _shape->bounds();
         }
 
         //mat4f& transform() { return _transform; };

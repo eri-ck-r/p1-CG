@@ -131,19 +131,16 @@ void Raycaster::render()
 {
 	Color rayColor;
 
-	/*
 	_bvh = nullptr;
 
-	std::vector<Reference<Shape3>> shapeVector;
+	std::vector<Reference<Actor3>> shapeVector;
 	for (auto actor : _scene->actors)
 	{
-
 		assert(actor != nullptr);
-		shapeVector.push_back(actor->shape());
+		shapeVector.push_back(actor);
 	}
-	// _bvh = BVH<Shape3>::makeUse(new BVH<Shape3>{ std::move(shapeVector) });
-	_bvh = new BVH<Shape3>{ std::move(shapeVector) };
-	*/
+	//_bvh = new BVH<Actor3>{ std::move(shapeVector) };
+	_bvh = BVH<Actor3>::makeUse(new BVH<Actor3>{ std::move(shapeVector) });
 
 	for (int j = 0; j < _n; ++j)
 	{
@@ -167,12 +164,12 @@ Color Raycaster::shade(ray3f& pixelRay)
 
 	Color c = _scene->backgroundColor;
 	
-	Intersection inter;
+	cg::Intersection inter;
 
 	if (shoot(pixelRay, inter))
 	{
 		Actor3* actor = (Actor3*)inter.object;
-		auto m = actor->material();
+		Reference<Material> m = actor->material();
 		c = m->ambient * _scene->ambientLight;
 		vec3f interPoint = pixelRay(inter.distance);
 		vec3f shapeNormal = actor->shape()->normalAt(interPoint);
@@ -202,7 +199,6 @@ Color Raycaster::shade(ray3f& pixelRay)
 
 			if (!isOccluded)
 			{ 
-
 				Color lightColor = light->lightColor(lightDistance);
 				vec3f halfWay = (lightDirection - pixelRay.direction).versor();
 
@@ -254,19 +250,23 @@ ray3f Raycaster::makeRay(int i, int j)
 	return ray3f{ _camera->position(), p };
 }
 
-bool Raycaster::shoot(ray3f ray, Intersection& inter)
+bool Raycaster::shoot(ray3f ray, Intersection& hit)
 {
 	if (_scene->actors.empty())
 	{
 		std::cout << "lista vazia tá vazia" << '\n';
 		return false;
 	}
+
+	hit.distance = ray.tMax;
+	hit.object = nullptr;
+	return _bvh->intersect(ray, hit);
+
+	/*
 	float minDistance = std::numeric_limits<float>::max();
 	Reference<Actor3> closestActor = *(_scene->actors.begin());
 	for (auto actor : _scene->actors)
 	{
-		cg::Intersection hit;
-
 		if (actor->shape()->intersect(ray, hit) && hit.distance < minDistance)
 		{
 			minDistance = hit.distance;
@@ -276,12 +276,13 @@ bool Raycaster::shoot(ray3f ray, Intersection& inter)
 	
 	if (minDistance != std::numeric_limits<float>::max())
 	{
-		inter.object = closestActor;
-		inter.distance = minDistance;
+		hit.object = closestActor;
+		hit.distance = minDistance;
 		return true;
 	}
 
 	return false;
+	*/
 }
 
 
