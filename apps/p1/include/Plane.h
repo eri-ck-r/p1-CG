@@ -10,7 +10,9 @@ private:
     vec3f _N;
 
 public:
-    Plane(vec3f p, vec3f N) : _p{ p }, _N{ N.versor()}
+    Plane() :
+        _p{ 0.0f, 0.0f, 0.0f },
+        _N{ 0.0f, 1.0f, 0.0f }
     {
         // do nothing
     }

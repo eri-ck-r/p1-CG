@@ -18,7 +18,6 @@ public:
 	virtual vec3f normalAt(const vec3f& p) const = 0;
 
 	virtual cg::Bounds3f bounds() const = 0;
-
 };
 
 

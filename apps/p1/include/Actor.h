@@ -45,12 +45,17 @@ namespace cg {
             _material = &material;
         }
 
-        Shape3* shape()
+        void setShape(const Shape3& shape)
+        {
+            _shape = &shape;
+        }
+
+        auto shape()
         {
             return _shape;
         }
 
-        Material* material()
+        Reference<Material>& material()
         {
             return _material;
         }

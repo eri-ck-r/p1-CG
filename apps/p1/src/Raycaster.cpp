@@ -23,7 +23,7 @@ Reference<Sphere> Raycaster::createSphere(const vec3f& center, const float radiu
 */
 Reference<Plane> Raycaster::createPlane(const vec3f& P, const vec3f& angles, const vec2f& scale = { 1.0f, 1.0f })
 {
-	Reference<Plane> plane = Plane::makeUse(new Plane(P, { 0.0f, 1.0f, 0.0f }));
+	Reference<Plane> plane = Plane::makeUse(new Plane());
 	plane->setTransform(P, quatf::eulerAngles(angles), { scale.x, 1.0f, scale.y });
 	return plane;
 }
