@@ -21,7 +21,7 @@ public:
 		// do nothing
 	}
 	
-	bool intersect(const ray3f& ray, float& t) const override
+	bool intersect(const ray3f& ray, cg::Intersection& hit) const override
 	{
 		vec3f newPoint = worldToLocalMatrix().transform(ray.origin);
 		vec3f newDirection = worldToLocalMatrix().transformVector(ray.direction);
@@ -43,9 +43,15 @@ public:
 		if (cg::math::isPositive(t2))
 			tmin = cg::math::min(t2, tmin);
 
-		t = tmin / newDirection.length();
-		return ( (tmin != std::numeric_limits<float>::max()));
+		auto t = tmin / newDirection.length();
+		if ((tmin != std::numeric_limits<float>::max()))
+		{
+			hit.object = this;
+			hit.distance = tmin;
+			return true;
+		}
 
+		return false;
 	}
 
 	vec3f normalAt(const vec3f& p) const override
