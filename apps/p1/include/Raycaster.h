@@ -12,6 +12,7 @@
 #include "Actor.h"
 #include "Sphere.h"
 #include "Plane.h"
+#include "Box.h"
 #include "graphics/GLImage.h"
 #include "graphics/PrimitiveBVH.h"
 
@@ -27,7 +28,7 @@ private:
 	float aspectRatio;
 	ImageBuffer _imageBuffer;
 	Reference<GLImage> _image;
-	// Reference<BVH<Shape3>> _bvh;
+	Reference<BVH<Actor3>> _bvh;
 
 	Reference<Sphere> createSphere(const vec3f&, const float, const vec3f&);
 
