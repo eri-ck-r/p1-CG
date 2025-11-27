@@ -191,9 +191,9 @@ Color Raycaster::shade(ray3f& pixelRay)
 
 			for (auto shadowActor : _scene->actors)
 			{
-				float shadowInterPoint;
-				if (shadowActor->shape()->intersect(lightRay, shadowInterPoint) &&
-					math::isNegative(shadowInterPoint - lightDistance))
+				cg::Intersection hit;
+				if (shadowActor->shape()->intersect(lightRay, hit) &&
+					math::isNegative(hit.distance - lightDistance))
 				{
 					isOccluded = true;
 					break;
@@ -265,11 +265,11 @@ bool Raycaster::shoot(ray3f ray, Intersection& inter)
 	Reference<Actor3> closestActor = *(_scene->actors.begin());
 	for (auto actor : _scene->actors)
 	{
-		float t;
+		cg::Intersection hit;
 
-		if (actor->shape()->intersect(ray, t) && t < minDistance)
+		if (actor->shape()->intersect(ray, hit) && hit.distance < minDistance)
 		{
-			minDistance = t;
+			minDistance = hit.distance;
 			closestActor = actor;
 		}
 	}

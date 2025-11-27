@@ -6,36 +6,44 @@
 class Plane : public Shape3
 {
 private:
-    vec3f _p;
-    vec3f _N;
+  vec3f _p;
+  vec3f _N;
 
 public:
-    Plane(vec3f p, vec3f N) : _p{ p }, _N{ N.versor()}
+  Plane(vec3f p, vec3f N) : _p{ p }, _N{ N.versor() }
+  {
+    // do nothing
+  }
+
+  bool intersect(const ray3f& ray, cg::Intersection& hit) const override
+  {
+    vec3f newOrigin = worldToLocalMatrix().transform(ray.origin);
+    vec3f newDirection = worldToLocalMatrix().transformVector(ray.direction);
+    ray3f newRay{ newOrigin, newDirection };
+    float tLocal = -newRay.origin.y / (newRay.direction.y); //TODO simplifiacr isso aqui pq o plano tem origem no 0 0 0 e normal 0 1 0 entao fica -newOrigin.y/newDirection.y
+    vec3f interPoint = newRay(tLocal);
+    auto t = tLocal / newDirection.length();
+
+    // retornar verdadeiro se -1 < x < 1 e -1 < z < 1
+    if (cg::math::abs(interPoint.x) <= 1.0f && cg::math::abs(interPoint.z) <= 1.0f && cg::math::isPositive(t))
     {
-        // do nothing
+      hit.distance = t;
+      hit.object = this;
+      return true;
     }
 
-    bool intersect(const ray3f& ray, float& t) const override
-    {
-        vec3f newOrigin = worldToLocalMatrix().transform(ray.origin);
-        vec3f newDirection = worldToLocalMatrix().transformVector(ray.direction);
-        ray3f newRay{ newOrigin, newDirection };
-        float tLocal = -newRay.origin.y / (newRay.direction.y); //TODO simplifiacr isso aqui pq o plano tem origem no 0 0 0 e normal 0 1 0 entao fica -newOrigin.y/newDirection.y
-        vec3f interPoint = newRay(tLocal);
-        t = tLocal / newDirection.length();
-        // retornar verdadeiro se -1 < x < 1 e -1 < z < 1
-        return cg::math::abs(interPoint.x) <= 1.0f && cg::math::abs(interPoint.z) <= 1.0f && cg::math::isPositive(t);
-    }
+    return false;
+  }
 
-    vec3f normalAt(const vec3f& p) const override
-    {
-        return localToWorldMatrix().transformVector(_N).versor();
-    }
+  vec3f normalAt(const vec3f& p) const override
+  {
+    return localToWorldMatrix().transformVector(_N).versor();
+  }
 
-    cg::Bounds3f bounds() const override
-    {
-        return cg::Bounds3f{};
-	}
+  cg::Bounds3f bounds() const override
+  {
+    return cg::Bounds3f{};
+  }
 };
 
 #endif

@@ -13,7 +13,7 @@ using vec3f = cg::Vector<float, 3>;
 class Shape3 : public cg::TransformableObject
 {
 public:
-	virtual bool intersect(const ray3f& ray, float& t) const = 0;
+	virtual bool intersect(const ray3f& ray, cg::Intersection& hit) const = 0;
 
 	virtual vec3f normalAt(const vec3f& p) const = 0;
 
