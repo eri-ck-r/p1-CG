@@ -71,7 +71,8 @@ public:
 
 	void initializeMaterialList();
 
-	List<Reference<Material>> materialList;
+	Reference<Material> materials[5];
+
 private:
 	using Base = cg::GLRenderWindow3;
 

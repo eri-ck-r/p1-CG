@@ -49,7 +49,6 @@ MainWindow::MainWindow(int width, int height) :
 
 void MainWindow::initializeMaterialList()
 {
-	Reference<Material> materials[5];
 	materials[0] = Material::makeUse(new Material{Color(0.54f, 0.31f, 0.15f)});
 	materials[1] = Material::makeUse(new Material{Color(0.83f, 0.84f, 0.86f)});
 	materials[2] = Material::makeUse(new Material{Color(0.75f, 0.75f, 0.75f)});
@@ -61,9 +60,6 @@ void MainWindow::initializeMaterialList()
     materials[2]->specular = Color(0.95f, 0.93f, 0.88f); materials[2]->setName("Silver");
     materials[3]->specular = Color(0.54f, 0.50f, 0.45f); materials[3]->setName("Titanium");
     materials[4]->specular = Color(1.00f, 0.71f, 0.29f); materials[4]->setName("Gold");
-	
-	for (int i = 0; i < 5; i++)
-		materialList.add(materials[i]);
 }
 
 void
@@ -71,6 +67,7 @@ MainWindow::initialize()
 {
 	// Put your OpenGL initialization code here. Example:
 	Base::initialize();
+	initializeMaterialList();
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1.0f, 1.0f);
@@ -277,9 +274,20 @@ MainWindow::gui()
 		if (ImGui::BeginMenu("Mesh"))
 		{
 			if (ImGui::MenuItem("Sphere"))
+			{
 				_currentActor->mesh() = GLGraphics3::sphere();
+				_currentActor->setShape(*Sphere::makeUse(new Sphere()));
+			}
 			if (ImGui::MenuItem("Box"))
+			{
 				_currentActor->mesh() = GLGraphics3::box();
+
+			}
+			if (ImGui::MenuItem("Plane"))
+			{
+				_currentActor->mesh() = GLGraphics3::quad();
+				_currentActor->setShape(*Plane::makeUse(new Plane()));
+			}
 			ImGui::EndMenu();
 		}
 	}
@@ -299,10 +307,17 @@ MainWindow::gui()
 
 		if (ImGui::BeginMenu("Material"))
 		{
-			if (ImGui::MenuItem("Sphere"))
-				_currentActor->mesh() = GLGraphics3::sphere();
-			if (ImGui::MenuItem("Box"))
-				_currentActor->mesh() = GLGraphics3::box();
+			if (ImGui::MenuItem(materials[0]->name()))
+				_currentActor->material() = materials[0];
+			if (ImGui::MenuItem(materials[1]->name()))
+				_currentActor->material() = materials[1];
+			if (ImGui::MenuItem(materials[2]->name()))
+				_currentActor->material() = materials[2];
+			if (ImGui::MenuItem(materials[3]->name()))
+				_currentActor->material() = materials[3];
+			if (ImGui::MenuItem(materials[4]->name()))
+				_currentActor->material() = materials[4];
+
 			ImGui::EndMenu();
 		}
 
@@ -384,7 +399,7 @@ void MainWindow::updateActorGUI()
 void MainWindow::updateActorShape()
 {
 	std::cout << "atualizei kkkk" << '\n';
-	_currentActor->shape()->setTransform(actorProps.objectPosition, quatf::identity(), vec3f{ 1.0f, 1.0f, 1.0f } * actorProps.objectRadius);
+	_currentActor->shape()->setTransform(actorProps.objectPosition, quatf::identity(),  actorProps.objectScale);
 	updateActorGUI();
 }
 
