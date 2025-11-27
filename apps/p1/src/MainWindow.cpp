@@ -71,6 +71,7 @@ MainWindow::initialize()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1.0f, 1.0f);
+	camera()->clippingPlanes(_frustumPlanes.x, _frustumPlanes.y);
 
 	_scene =  Scene::makeUse(new Scene());
 	_scene->backgroundColor = _backgroundColor;
@@ -145,11 +146,7 @@ MainWindow::keyInputEvent(int key, int action, int mods)
 			return true;
 		case GLFW_KEY_U:
 			createSphere(camera()->position(), 1.0f);
-			std::cout << "aa";
 			return true;
-		case GLFW_KEY_S:
-			std::cout << "Shaders reloaded\n";
-			//_renderer->updateShaders();
 		}
 
 	if (ImGui::GetIO().WantCaptureKeyboard || action == GLFW_RELEASE)
@@ -221,24 +218,19 @@ MainWindow::onMouseLeftPress(int i, int j)
 	Intersection inter;
 	if (rc.shoot(mouseRay, inter))
 	{
-		std::cout << "acertouj" << '\n';
+		std::cout << "Object selected." << '\n';
 		_currentActor = (Actor3*) inter.object;
 		updateActorGUI();
 		return true;
 	}
-	std::cout << " nn acertouj" << '\n';
 	return false;
 }
-void
-MainWindow::gui()
+
+inline void MainWindow::WindowControlGUI()
 {
-	// Put your gui code here. Example:
-	ImGui::SetNextWindowSize({ 420, 240 });
+	ImGui::SetNextWindowSize({ 420, 200 });
 	ImGui::Begin("P2/T1 GUI");
 	{
-
-		ImGui::ColorEdit3("Line Color", (float*)&_lineColor);
-		ImGui::ColorEdit3("Mesh Color", (float*)&_meshColor);
 		if (ImGui::ColorEdit3("Ambient Light", (float*)&_ambientLight))
 		{
 			_scene->ambientLight = _ambientLight;
@@ -247,10 +239,10 @@ MainWindow::gui()
 		if (ImGui::ColorEdit3("Background Color", (float*)&_backgroundColor))
 			_scene->backgroundColor = _backgroundColor;
 		ImGui::Separator();
-		ImGui::Checkbox("Animate", &_animate);
-		ImGui::SliderFloat("Speed", &_speed, 0.001f, 0.01f);
 		ImGui::SliderFloat("Camera speed", &_cameraSpeed, 1.0f, 10.0f);
-		ImGui::SliderFloat("Object Creation distance", &_objectCreationDistance, 1.0f, 50.0f);
+		if (ImGui::SliderFloat2("Frustum Planes", &_frustumPlanes.x, 0.01f, 30.0f))
+			camera()->setClippingPlanes(_frustumPlanes.x, _frustumPlanes.y);
+		ImGui::SliderFloat("Creation distance", &_objectCreationDistance, 1.0f, 50.0f);
 		ImGui::Checkbox("Show Ground", &_showGround);
 		ImGui::Separator();
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
@@ -258,9 +250,11 @@ MainWindow::gui()
 			ImGui::GetIO().Framerate);
 	}
 	ImGui::End();
+}
 
-	
-	ImGui::SetNextWindowSize({ 360, 180 });
+inline void MainWindow::ObjectInspectorGUI()
+{
+	ImGui::SetNextWindowSize({ 360, 150 });
 	ImGui::Begin("Object Inspector");
 	{
 		if (ImGui::InputFloat("Radius", &actorProps.objectRadius, 0.1f, 10.0f))
@@ -268,6 +262,10 @@ MainWindow::gui()
 		if (ImGui::SliderFloat3("Position", &actorProps.objectPosition.x, -20.0f, 20.0f))
 			updateActorShape();
 		if (ImGui::SliderFloat3("Scale", &actorProps.objectScale.x, -20.0f, 20.0f))
+			updateActorShape();
+		if(ImGui::SliderFloat("Angle", &actorProps.angle, 0.0f, 360.0f))
+			updateActorShape();
+		if(ImGui::SliderFloat3("Rotation", &actorProps.objectPosition.x, -1.0f, 1.0f))
 			updateActorShape();
 		if (ImGui::Button("Delete"))
 			removeActor();
@@ -292,8 +290,11 @@ MainWindow::gui()
 		}
 	}
 	ImGui::End();
+}
 
-	ImGui::SetNextWindowSize({ 360, 240 });
+inline void MainWindow::MaterialInspectorGUI()
+{
+	ImGui::SetNextWindowSize({ 360, 200 });
 	ImGui::Begin("Object Material");
 	{
 		if (ImGui::ColorEdit3("Color", (float*)&_currentActor->material()->diffuse))
@@ -323,13 +324,16 @@ MainWindow::gui()
 
 	}
 	ImGui::End();
+}
 
+inline void MainWindow::lightInspectorGUI()
+{
 	ImGui::SetNextWindowSize({ 360,240 });
 	const char* previewName = (_currentLight == nullptr) ? "Select Light" : _currentLight->name();
-	ImGui::SetNextWindowSize({ 360,360 });
+	ImGui::SetNextWindowSize({ 360,200 });
 	ImGui::Begin("Light Inspector");
 	{
-		if(ImGui::BeginCombo("Scene Lights", previewName))
+		if (ImGui::BeginCombo("Scene Lights", previewName))
 		{
 			for (Reference<Light> light : _scene->lights)
 			{
@@ -354,7 +358,7 @@ MainWindow::gui()
 			ImGui::ColorEdit3("Color", (float*)&_currentLight->color);
 			if (ImGui::SliderFloat3("Position", &_currentLightPosition.x, -20.0f, 20.0f))
 				_currentLight->setPosition(_currentLightPosition);
-			
+
 			ImGui::Separator();
 			ImGui::Text("FallOff");
 			if (ImGui::BeginMenu(falloffToString(_currentLight->falloff)))
@@ -372,7 +376,10 @@ MainWindow::gui()
 	if (ImGui::Button("Delete"))
 		_scene->lights.remove(_currentLight);
 	ImGui::End();
+}
 
+inline void MainWindow::rayCastGUI()
+{
 	ImGui::SetNextWindowSize({ 80,80 });
 	ImGui::Begin("Raycast");
 	if (ImGui::Button("Render"))
@@ -383,6 +390,20 @@ MainWindow::gui()
 	ImGui::End();
 }
 
+void
+MainWindow::gui()
+{
+	ObjectInspectorGUI();
+		
+	WindowControlGUI();
+		
+	MaterialInspectorGUI();
+		
+	lightInspectorGUI();
+		
+	rayCastGUI();
+}
+
 void MainWindow::updateActorGUI()
 {
 	auto& trs = _currentActor->shape()->localToWorldMatrix();
@@ -391,15 +412,12 @@ void MainWindow::updateActorGUI()
 	auto scaleY = trs[1].length();
 	auto scaleZ = trs[2].length();
 	actorProps.objectScale = vec3f{ scaleX, scaleY, scaleZ };
-
 	actorProps.color = _currentActor->material()->ambient * 5.0f;
-
 }
 
 void MainWindow::updateActorShape()
 {
-	std::cout << "atualizei kkkk" << '\n';
-	_currentActor->shape()->setTransform(actorProps.objectPosition, quatf::identity(),  actorProps.objectScale);
+	_currentActor->shape()->setTransform(actorProps.objectPosition, quatf(actorProps.angle ,actorProps.objectRotation.versor()), actorProps.objectScale);
 	updateActorGUI();
 }
 

@@ -258,7 +258,7 @@ bool Raycaster::shoot(ray3f ray, Intersection& inter)
 {
 	if (_scene->actors.empty())
 	{
-		std::cout << "lista vazia tá vazia" << '\n';
+		std::cout << "lista vazia" << '\n';
 		return false;
 	}
 	float minDistance = std::numeric_limits<float>::max();

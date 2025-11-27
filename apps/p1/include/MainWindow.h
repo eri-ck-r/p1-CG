@@ -86,10 +86,11 @@ private:
 	float _radius;
 	float _speed;
 	float _cameraSpeed = 1.0f;
+	vec2f _frustumPlanes;
 	bool _animate{ false };
 	bool _showGround{ true };
 	bool _openGLMode{ true };
-	Color _ambientLight;
+	Color _ambientLight = Color::gray;
 	Color _backgroundColor{ 184,240,255 }; // Light blue
 	// Overridden method examples
 	void initialize() override;
@@ -99,8 +100,23 @@ private:
 	bool onMouseLeftPress(int i, int j) override;
 	bool mouseButtonInputEvent(int button, int action, int) override;
 
-	void gui() override;
 
+	void gui() override;
+	void ObjectInspectorGUI();
+
+	void WindowControlGUI();
+
+	void MaterialInspectorGUI();
+
+	void lightInspectorGUI();
+
+	void rayCastGUI();
+
+	void updateActorGUI();
+
+	void updateActorShape();
+
+	void removeActor();
 
 	//gui helper methods and attributes
 	Reference<Actor3> _currentActor;
@@ -110,6 +126,8 @@ private:
 		float objectRadius = 1;
 		vec3f objectScale;
 		vec3f objectPosition;
+		vec3f objectRotation;
+		float angle;
 		Color color;
 	} actorProps;
 	
@@ -117,9 +135,6 @@ private:
 	vec3f _currentLightPosition;
 	float _objectCreationDistance = 10;
 
-	void updateActorGUI();
-	void updateActorShape();
-	void removeActor();
 }; // MainWindow
 
 static const char* falloffToString(Light::Falloff falloff)

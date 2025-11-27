@@ -26,6 +26,7 @@
     <ClInclude Include="..\..\include\Scene.h" />
     <ClInclude Include="..\..\include\Shape3.h" />
     <ClInclude Include="..\..\include\Sphere.h" />
+    <ClInclude Include="Box.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragmentShader.frag" />

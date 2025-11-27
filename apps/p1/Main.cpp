@@ -62,5 +62,18 @@ Reference<Material> createMaterial(const float& r, const float& g, const float& 
 int
 main(int argc, char** argv)
 {
+    puts("Parte Pratica P2\n");
+    puts("Autores: Erick Rodrigues, Henrique Oliveira e Mauricio Raquita\n");
+    puts("Camera controls keys:\n"
+        "(w) move forward  (s) move backward\n"
+        "(a) move left     (d) move right\n"
+        "(q) move up       (z) move down\n");
+    puts("Mouse controls:\n"
+        "(scroll wheel)    zoom\n"
+        "(middle-click)    pan\n"
+        "(Left Click)      Select Object\n"
+        "(Alt+Left-Click)  Add Object\n"
+        "(Alt+right-click) Add Light");
+
 	return cg::Application{ new MainWindow(1600, 900) }.run(argc, argv);
 }
