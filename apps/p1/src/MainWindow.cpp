@@ -281,6 +281,7 @@ MainWindow::gui()
 			if (ImGui::MenuItem("Box"))
 			{
 				_currentActor->mesh() = GLGraphics3::box();
+				_currentActor->setShape(*Box::makeUse(new Box({ -1.0f,-1.0f,-1.0f }, { 1.0f, 1.0f, 1.0f })));
 
 			}
 			if (ImGui::MenuItem("Plane"))

@@ -12,6 +12,7 @@
 #include "Actor.h"
 #include "Sphere.h"
 #include "Plane.h"
+#include "Box.h"
 #include "graphics/GLImage.h"
 #include "graphics/PrimitiveBVH.h"
 
