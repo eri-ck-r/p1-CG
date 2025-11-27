@@ -47,6 +47,25 @@ MainWindow::MainWindow(int width, int height) :
 	_speed = 0.01f;
 }
 
+void MainWindow::initializeMaterialList()
+{
+	Reference<Material> materials[5];
+	materials[0] = Material::makeUse(new Material{Color(0.54f, 0.31f, 0.15f)});
+	materials[1] = Material::makeUse(new Material{Color(0.83f, 0.84f, 0.86f)});
+	materials[2] = Material::makeUse(new Material{Color(0.75f, 0.75f, 0.75f)});
+	materials[3] = Material::makeUse(new Material{Color(0.53f, 0.52f, 0.50f)});
+	materials[4] = Material::makeUse(new Material{Color(1.00f, 0.84f, 0.00f)});
+
+    materials[0]->setName("Copper");
+    materials[1]->setName("Aluminum");
+    materials[2]->setName("Silver");
+    materials[3]->setName("Titanium");
+    materials[4]->setName("Gold");
+	
+	for (int i = 0; i < 5; i++)
+		materialList.add(materials[i]);
+}
+
 void
 MainWindow::initialize()
 {
@@ -58,6 +77,7 @@ MainWindow::initialize()
 
 	_scene =  Scene::makeUse(new Scene());
 	_scene->backgroundColor = _backgroundColor;
+	_scene->ambientLight = Color::gray * 0.5f;
 
 	_renderer = MyRenderer::makeUse(new MyRenderer());
 	_renderer->setCamera(camera());
@@ -280,6 +300,7 @@ MainWindow::gui()
 	}
 	ImGui::End();
 
+	ImGui::SetNextWindowSize({ 360,240 });
 	const char* previewName = (_currentLight == nullptr) ? "Select Light" : _currentLight->name();
 	ImGui::SetNextWindowSize({ 360,360 });
 	ImGui::Begin("Light Inspector");

@@ -157,8 +157,8 @@ Color Raycaster::shade(ray3f& pixelRay)
 
 	if (shoot(pixelRay, inter))
 	{
-		Reference<Material> m = inter.actor->material();
-		c = m->ambient;
+		auto m = inter.actor->material();
+		c = m->ambient * _scene->ambientLight;
 		vec3f interPoint = inter.interPoint;
 		vec3f shapeNormal = inter.actor->shape()->normalAt(interPoint);
 		Color interpolatedDiffuse = (m->diffuse + (Color::black - m->diffuse) * inter.actor->metalFactor);
@@ -192,14 +192,14 @@ Color Raycaster::shade(ray3f& pixelRay)
 				vec3f halfWay = (lightDirection - pixelRay.direction).versor();
 
 				Color interpolatedSpecular = Color(0.04f, 0.04f, 0.04f) * (1 - inter.actor->metalFactor) + m->specular * inter.actor->metalFactor;
-				Color fresnel = interpolatedSpecular + (Color::white - interpolatedSpecular) * pow(1 - max(lightDirection.dot(halfWay), 0.0f), 5);
+				Color fresnel = interpolatedSpecular + (Color::white - interpolatedSpecular) * powf(1.0f - max(lightDirection.dot(halfWay), 0.01f), 5);
 
-				float nDotL =  max(shapeNormal.dot(lightDirection), 0.0f);
-				float nDotV = max(-shapeNormal.dot(pixelRay.direction), 0.0f);
+				float nDotL =  max(shapeNormal.dot(lightDirection), 0.01f);
+				float nDotV = max(-shapeNormal.dot(pixelRay.direction), 0.01f);
 				float k = sqr(inter.actor->rugosity + 1) / 8; // compilador vai otimizar pois é divisão por potencia de 2
 				float g1 = nDotL / ( (nDotL * (1 - k)) + k);
 				float g2 = nDotV / ( (nDotV * (1 - k)) + k);
-				float microfacetNDF = pow(inter.actor->rugosity, 2) / ( pi<float> * sqr(sqr( max(shapeNormal.dot(halfWay), 0.0f)) * ( pow(inter.actor->rugosity, 4) - 1) + 1));
+				float microfacetNDF = powf(inter.actor->rugosity, 2) / ( pi<float> * sqr(sqr( max(shapeNormal.dot(halfWay), 0.1f)) * ( powf(inter.actor->rugosity, 4) - 1) + 1));
 
 				Color specularBRDF = fresnel * (g1 * g2 * microfacetNDF / (4 * nDotL * nDotV));
 
@@ -268,6 +268,8 @@ bool Raycaster::shoot(ray3f ray, IntersectionInfo& inter)
 
 	return false;
 }
+
+
 
 
 

@@ -59,6 +59,7 @@ public:
 	{
 		Reference<Light> newLight = Light::makeUse(new Light());
 		newLight->setType(Light::Type::Point);
+		newLight->falloff = Light::Falloff::Linear;
 		newLight->setPosition(pos);
 		_scene->lights.add(newLight);
 	}
@@ -68,6 +69,9 @@ public:
 		rc.render();
 	}
 
+	void initializeMaterialList();
+
+	List<Reference<Material>> materialList;
 private:
 	using Base = cg::GLRenderWindow3;
 
@@ -127,6 +131,8 @@ static const char* falloffToString(Light::Falloff falloff)
 		return "Linear";
 	case Light::Falloff::Quadratic:
 		return "Quadratic";
+	default:
+		return nullptr;
 	}
 }
 
